@@ -1,0 +1,69 @@
+% -*- coding: utf-8 -*-
+\documentclass{report}
+
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  left=1in,
+  top=1.5in,
+  headheight=0.25in
+}
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\definecolor{codebg}{HTML}{c0f0f6}
+%% \definecolor{codebg}{HTML}{d6d6d6}
+\definecolor{color-keyword}{HTML}{859900}
+\definecolor{color-string}{HTML}{2aa198}
+\definecolor{color-comment}{HTML}{586e75}
+\definecolor{color-identifier}{HTML}{268bd2}
+
+\lstloadlanguages{Haskell,Java}
+\lstnewenvironment{code}{\lstset{language=Haskell}}{}
+
+\lstset{
+  frame=single,
+  framerule=0pt,
+  basicstyle=\small\ttfamily,
+  backgroundcolor=\color{codebg},
+  flexiblecolumns=false,
+  basewidth={0.5em,0.45em},
+  identifierstyle=\color{color-identifier}\slshape,
+  keywordstyle=\color{color-keyword}\bfseries,
+  commentstyle=\color{color-comment},
+  stringstyle=\color{color-string},
+  literate=
+    {+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
+    {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
+    {\\\\}{{\char`\\\char`\\}}1
+    {->}{{$\rightarrow$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2
+    {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2
+    {\ .}{{$\circ$}}2 {\ .\ }{{$\circ$}}2
+    {>>}{{>>}}2 {>>=}{{>>=}}2
+    {|}{{$\mid$}}1
+}
+
+\newcommand\codeline[2][]{\colorbox{codebg}{\lstinline[#1]{#2}}}
+\lstMakeShortInline[backgroundcolor=\color{codebg}]@
+
+\begin{document}
+\title{Creating an Emacs Diary Parser with Haskell and Parsec}
+\author{Toby Tripp}
+\date{March 2018}
+\maketitle
+
+\tableofcontents
+
+\include{doc/monads}
+\include{doc/maybe}
+\include{doc/other}
+\include{src/csv1}
+
+\include{doc/biblio}
+\end{document}
+
+%% Local Variables:
+%% compile-command: "make -k "
+%% End:

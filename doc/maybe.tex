@@ -1,0 +1,59 @@
+\chapter{The Maybe Monad}
+
+\section{As Described by Computerphile \cite{riley2017}}
+
+\begin{code}
+-- Type and 2 type constuctors: Val and Div
+data Expr = Val Int | Div Expr Expr
+
+-- Val 1
+-- Div (Val 6) (Val 2)
+
+unsafe_eval :: Expr -> Int
+unsafe_eval (Val n) = n
+unsafe_eval (Div x y) = div (eval x) (eval y)
+
+-- eval (Div (Val 6) (Val 2))
+\end{code}
+
+What if @Div@ is passed zero?  The program will crash. So, error-checking is
+necessary.
+
+\begin{code}
+safediv :: Int -> Int -> Maybe Int
+safediv n m = if m == 0 then Nothing else Just (div n m)
+
+eval :: Expr -> Maybe Int
+eval (Val n)   = Just n
+eval (Div x y) = case eval' x of
+                   Nothing -> Nothing
+                   Just n  -> case eval y of
+                             Nothing -> Nothing
+                             Just m  -> safediv n m
+\end{code}
+
+Abstracting the pattern of @case@ checking @Maybe@ values can be represented
+as:
+
+\begin{table}[h]
+\begin{tabular}[b]{p{0.45\linewidth} | p{0.45\linewidth}}
+\hline
+Without `do' notation & With `do' notation \\ \hline
+\begin{code}[frame=shadowbox]
+eval' :: Expr -> Maybe Int
+eval' (Val n)   = return n
+eval' (Div x y) =
+  eval' x >>= (\n ->
+    eval' y >>= (\m ->
+      safediv n m))
+\end{code} &
+\begin{code}
+eval'' :: Expr -> Maybe Int
+eval'' (Val n)   = return n
+eval'' (Div x y) = do
+  n <- eval'' x
+  m <- eval'' y
+  safediv n m
+\end{code}
+\end{tabular}
+\end{table}

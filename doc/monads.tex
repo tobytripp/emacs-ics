@@ -1,0 +1,142 @@
+% -*- coding: utf-8 -*-
+\chapter{``Brian Beckman: Don't Fear the Monad''}
+
+Available on \href{https://youtu.be/ZhuHCtR3xq8}{Youtube} \cite{beckman2012}.
+
+Dr. Beckman, astrophysicist and senior software engineer, begins with a basic
+introduction to functional programming as a concept.  Most notably, he focuses
+on the concept of functions as being \textbf{replaceable} by table-lookups.
+
+\section{Outline (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{7:50})}
+
+\begin{enumerate}
+\item Functions
+\item Monoids
+\item Functions
+\item Monads
+\end{enumerate}
+
+\section{Notation (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{8:25})}
+
+\begin{description}
+\item [From ``imperative'' to functional notation] :
+  \begin{itemize}
+  \item $int\;x= x \in int$
+  \item \codeline{x :: int}
+  \end{itemize}
+  \begin{itemize}
+  \item $int\;f(int\;x)$
+  \item \codeline{f :: int -> int}
+  \end{itemize}
+\item [Given type variable $a$ :] $\forall a$
+  \begin{itemize}
+  \item \codeline[language=Java]{A x}
+  \item \codeline[language=Haskell]{x :: a}
+  \end{itemize}
+  \begin{itemize}
+  \item \codeline[language=Java]{static A f<A>(A x)}
+  \item \codeline[language=Haskell]{f :: a -> a}
+  \end{itemize}
+\end{description}
+
+\subsection{Composition}
+
+Given:
+\begin{lstlisting}[frame=trBL, frameround=fttt, framerule=1pt, label=def]
+  x :: a
+  f :: a -> a
+  g :: a -> a
+\end{lstlisting}
+in imperative style function composition might appear as: \codeline{f(g(a))}
+or in reverse: \codeline{g(f(a))}.
+
+In functional style, function application appears as: \codeline{g a} and
+composition can be shown as: \codeline{f(g a)}.  Parenthesis are necessary due to
+partial application being left associative.  For example, \codeline{f h g} is
+applied as though \codeline{(f h) g}.
+
+It is also possible to use a composition operator, $\circ$, to imply composition: \codeline{(f . g) a}.  So, given the above\ref{def}, we can deduce:
+\begin{lstlisting}
+  h = (f . g) a = f . g
+  h :: a -> a
+\end{lstlisting}
+This does confuse the concepts of @a@ as argument and @a@ as type, but the
+point remains clear, I think.
+
+
+\section{Monoids (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{20:40})}
+
+\begin{minipage}{\linewidth}
+  \begin{quotation}
+    In abstract algebra, a branch of mathematics, a monoid is an algebraic
+    structure with a single associative binary operation and an identity
+    element.
+
+    Monoids are studied in semigroup theory, because they are semigroups with
+    identity.
+
+    \footnote{\href{https://en.wikipedia.org/wiki/Monoid}{Wikipedia}}:
+  \end{quotation}
+\end{minipage}
+
+
+A @Monoid@ is a @Set@ with:
+\begin{enumerate}
+\item an associative binary operator (generally composition)
+\item an identity value
+\end{enumerate}
+
+The operator need not be commutative.
+
+In a programming context, a @Monoid@ guarantees type-consistency over function composition.
+
+\section{Monads (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{30:39})}
+
+Given:
+\begin{lstlisting}[frame=trBL, framerule=1pt, label=defM]
+  x :: a
+  f :: a -> M a
+  g :: a -> M a
+  g :: a -> M a
+\end{lstlisting}
+@M@ is described as a ``Type Constructor.''
+
+Again, Dr. Beckman is using @a@ to represent both a value of type @a@ as well
+as the type itself @a@.  Here he introduced the @Monad@ ``bind'' operator:
+@>>=@, which he likes to call ``shove'':
+\begin{lstlisting}
+  f :: a -> M a
+  g :: a -> M a
+  -- the right hand side is g, but written with
+  -- a lambda to preserve symmetry
+  \a -> (f a) >>= \a -> (g a)
+\end{lstlisting}
+
+The reason to preserve symmetry in the above expression is that the desired expression is ``bracketed'' as:
+\begin{math}
+  \lambda a \rightarrow [(f a) >>= \lambda a \rightarrow (g a)]
+\end{math}
+because the bind operator has type:
+\begin{lstlisting}
+  (>>=) :: Monad m => m a -> (a -> m b) -> m b
+\end{lstlisting}
+That is, @>>=@ accepts a @Monad@ (@M a@) and returns a function from
+@a -> M a@.
+
+The functions @f@, and @g@ live in a @Monoid@.  @M a@ (the \emph{data}) lives
+in a @Monad@.
+
+@(>>=)@ is the analog of function composition and, therefore, obeys the rules of a @Monoid@.  Including associativity and identity.
+
+In a @Monad@, identity is--in Haskell--written as:
+\begin{lstlisting}
+  return :: Monad m => a -> m a
+\end{lstlisting}
+
+Extended to non-uniform types:
+\begin{lstlisting}
+  g :: a -> Mb
+  f :: b -> Mc
+  \a -> (g a) >>= \b -> (f b) :: a -> Mc
+  g >>= \b -> (f b)
+\end{lstlisting}
