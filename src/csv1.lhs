@@ -68,8 +68,3 @@ The parser on the right if the left consumes no input.
   parseCSV :: String -> Either ParseError [[String]]
   parseCSV input = parse csvFile "(unknown)" input
 \end{code}
-
-%% Local Variables:
-%% compile-command: "make -C ../ "
-%% default-directory: "./"
-%% End:
