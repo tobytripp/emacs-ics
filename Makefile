@@ -1,21 +1,24 @@
 .SUFFIXES :
 .SUFFIXES : .lhs .tex .pdf
 
-TEX2PDF = /Library/TeX/texbin/pdflatex
-SOURCES = $(wildcard */*.lhs)
+TEX2PDF := /Library/TeX/texbin/pdflatex
+SOURCES := $(wildcard */*.lhs)
 
-all: $(TEX2PDF) doc.pdf
-	open doc.pdf
+test: src/*.lhs src/*.hs test/*.hs
+	stack test
+
+all: $(TEX2PDF) doc/doc.pdf
+	test
 
 $(TEX2PDF):
 	brew cask install mactex
 
-doc.pdf: doc.tex src/*.tex doc/*.tex
+%/doc.pdf: src/*.lhs doc/*.tex
 
 clean:
 	rm -f *.aux *.out *.log *.toc
 
 .tex.pdf:
-	$(TEX2PDF) $<
+	$(TEX2PDF) -output-directory=doc/ $<
 
-.PHONY: all
+.PHONY: all test

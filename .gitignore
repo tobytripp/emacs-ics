@@ -1,8 +1,7 @@
 .stack-work/
-emacs-diary-convert.cabal
+*.cabal
 *~
-/*.aux
-/*.log
-/*.out
-/*.toc
 *.aux
+*.log
+*.out
+*.toc

@@ -1,6 +1,6 @@
 module Lib
-    ( someFunc
+    (parseDiary
     ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+parseDiary :: IO ()
+parseDiary = putStrLn "DIARY TIME!"
