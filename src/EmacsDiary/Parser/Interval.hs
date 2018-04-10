@@ -4,7 +4,12 @@ import EmacsDiary.Parser.Tokens
 
 import Text.Parsec (sepBy1, unexpected)
 import Text.Parsec.String (Parser)
-import Data.Time.Clock (addUTCTime, NominalDiffTime, utctDayTime, utctDay, UTCTime)
+import Data.Time.Clock (
+  addUTCTime,
+  NominalDiffTime,
+  utctDayTime,
+  utctDay,
+  UTCTime)
 import Data.Time.Format (formatTime, parseTimeM, defaultTimeLocale)
 import Text.Printf (printf)
 

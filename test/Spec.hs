@@ -7,8 +7,11 @@ import Text.Parsec.String (Parser)
 import System.Exit (exitSuccess, exitFailure)
 
 import EmacsDiary.Parser.IntervalSpec (intervalTests)
+import qualified EmacsDiary.ParserSpec as PSpec
 
-allTests = intervalTests
+allTests = TestList [
+  intervalTests,
+  PSpec.tests]
 
 main :: IO ()
 main = do
