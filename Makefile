@@ -1,28 +1,25 @@
-.SUFFIXES :
-.SUFFIXES : .lhs .tex .pdf
+.PHONY: test doc typeset
 
-PROJECT := EmacsDiary
+.SUFFIXES :
+.SUFFIXES : .tex .pdf
+
 TEX2PDF := /Library/TeX/texbin/pdflatex
-SOURCES := $(wildcard */*.lhs)
+DOCDIR  := ./doc
+SRC     := $(wildcard */*.hs)
+DOCSRC  := $(wildcard */*.lhs)
 
 all: test doc
 
-test: $(SOURCES) src/*.hs test/*.hs
+test: $(SOURCES)
 	stack test
 
-doc: $(TEX2PDF) $(SOURCES) test/*.lhs doc/*.tex
-	touch doc/doc.tex
-	make doc/doc.pdf
+doc: $(TEX2PDF) $(DOCSRC) $(DOCDIR)/*.tex index.pdf
 
 $(TEX2PDF):
 	brew cask install mactex
 
-%/doc.pdf: $(SOURCES) test/*.lhs doc/*.tex
-
 clean:
-	rm -f *.aux *.out *.log *.toc
+	cd $(DOCDIR) && rm -f *.aux *.out *.log *.toc
 
-.tex.pdf:
-	$(TEX2PDF) -output-directory=doc/ $<
-
-.PHONY: test doc
+index.pdf: typeset
+	$(TEX2PDF) index.tex

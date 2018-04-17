@@ -22,18 +22,28 @@ quotedCell =
      return content
 \end{code}
 
-The functoin @quotedChar@ begins by consuming any character that is \emph{not}
+The function @quotedChar@ begins by consuming any character that is \emph{not}
 itself a quote.  If it is a quoted character, the stream must be checked for a
 second consecutive quote.  If so, a single quote mark is returned to the
 result string.
 
 \begin{quote}
-Notice that try in quotedChar on the right side of @<|>@. Recall that I said
-that try only has an effect if it is on the left side of @<|>@. This try does
-occur on the left side of a @<|>@, but on the left of one that must be within
-the implementation of many.
+ Notice that try in quotedChar on the right side of @<|>@. Recall that I said
+ that try only has an effect if it is on the left side of @<|>@. This try does
+ occur on the left side of a @<|>@, but on the left of one that must be within
+ the implementation of many.
 
-This try is important. Let's say we are parsing a quoted cell, and are getting towards the end of it. There will be another cell following. So we will expect to see a quote to end the current cell, followed by a comma. When we hit quotedChar, we will fail the noneOf test and proceed to the test that looks for two quotes in a row. We'll also fail that one because we'll have a quote, then a comma. If we hadn't used try, we'd crash with an error at this point, saying that it was expecting the second quote, because the first quote was already consumed. Since we use try, this is properly recognized as not a character that's part of the cell, so it terminates the many quotedChar expression as expected. Lookahead has once again proven very useful, and the fact that it is so easy to add makes it a remarkable tool in Parsec.
+ This try is important. Let's say we are parsing a quoted cell, and are
+ getting towards the end of it. There will be another cell following. So we
+ will expect to see a quote to end the current cell, followed by a comma. When
+ we hit quotedChar, we will fail the noneOf test and proceed to the test that
+ looks for two quotes in a row. We'll also fail that one because we'll have a
+ quote, then a comma. If we hadn't used try, we'd crash with an error at this
+ point, saying that it was expecting the second quote, because the first quote
+ was already consumed. Since we use try, this is properly recognized as not a
+ character that's part of the cell, so it terminates the many quotedChar
+ expression as expected. Lookahead has once again proven very useful, and the
+ fact that it is so easy to add makes it a remarkable tool in Parsec.
 \end{quote}
 
 \begin{code}

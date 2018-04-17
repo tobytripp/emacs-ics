@@ -30,8 +30,10 @@ showTime = formatTime defaultTimeLocale "%e %b %Y %R"
 \subsection{Parser Testing Helpers}
 
 \begin{code}
-testParse :: Parser a -> String -> Either ParseError a
-testParse p s = runParser p () "Spec.hs" s
+nullState = ()
+testParse :: Parser a -> String -> String -> Either ParseError a
+testParse p src = runParser p nullState src
+
 
 -- assertParsesTo expected p input = do
 --   let result = testParse p input
@@ -43,29 +45,26 @@ testParse p s = runParser p () "Spec.hs" s
 
 A Type for expressing parser assertions
 \begin{code}
-data ParserAssertion a =
-  ParserAssertion { parser   :: Parser a
+data ParserContext a =
+  ParserContext { parser     :: Parser a
                   , input    :: String
                   , expected :: String
                   }
 
-parses :: (Show a) => ParserAssertion a -> Assertion
+parses :: (Show a) => ParserContext a -> Assertion
 parses pa =
-  assertEqual "" result (expected pa)
-  where
-     result = case testParse (parser pa) (input pa) of
-      (Right actual) -> show actual
-      (Left error)   -> show error
+  case testParse (parser pa) ("expected: " ++ (expected pa)) (input pa) of
+    (Right actual) -> assertEqual "" (expected pa) (show actual)
+    (Left error)   -> assertFailure (show error)
 
-instance (Show a) => Testable (ParserAssertion a)
+instance (Show a) => Testable (ParserContext a)
   where
     test = TestCase . parses
-
 
 assertParser message expected parser input =
   parses pa
   where
-    pa = ParserAssertion parser input expected
+    pa = ParserContext parser input expected
 \end{code}
 
 \subsection{Writing the Tests}

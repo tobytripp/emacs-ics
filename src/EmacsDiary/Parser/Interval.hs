@@ -1,3 +1,4 @@
+-- -*- coding: utf-8 -*-
 module EmacsDiary.Parser.Interval where
 
 import EmacsDiary.Parser.Tokens
@@ -10,27 +11,28 @@ import Data.Time.Clock (
   utctDayTime,
   utctDay,
   UTCTime)
-import Data.Time.Format (formatTime, parseTimeM, defaultTimeLocale)
+import Data.Time.Format (iso8601DateFormat, formatTime, parseTimeM, defaultTimeLocale)
 import Text.Printf (printf)
 
 dateFormat = "%e %b %Y"
 timeFormat = "%H:%M"
+showTimeFormat = "%H:%M:%S%z"
 locale = defaultTimeLocale
 
 class AsUTC a where
       asUTC :: a -> Either String UTCTime
 
 data Date = Date { dateDay   :: Integer,
-                   dateMonth :: String,
+                   dateMonth :: Integer,
                    dateYear  :: Integer
                  } deriving (Eq)
 instance Show Date where
          show Date {dateDay=d, dateMonth=m, dateYear=y} =
-            printf "%d %s %d" d m y
+            printf "%d-%d-%d" y m d
 instance AsUTC Date where
          asUTC d = case parsed of
                      (Just x) -> Right x
-                     Nothing -> Left $ "Unable to parse " ++ (show d)
+                     Nothing -> Left $ "`parseTime` unable to parse “" ++ (show d) ++ "”"
              where
                parsed = parseTime . show $ d
                parseTime = parseTimeM True locale dateFormat
@@ -39,7 +41,7 @@ data Time = Time { timeHour   :: Integer
                  , timeMinute :: Integer
                  } deriving (Eq)
 instance Show Time where
-         show t = printf "%02d:%02d" (timeHour t) (timeMinute t)
+         show t = iso8601DateFormat (Just showTimeFormat)
 instance AsUTC Time where
          asUTC t = case parsed of
                      (Just x) -> Right x
@@ -81,7 +83,6 @@ addTime :: UTCTime -> Time -> UTCTime
 addTime a t = addUTCTime (timeToNDiff t) a
 
 day   = numeric
-month = word
 year  = numeric
 
 timeS :: Parser Time
@@ -97,3 +98,6 @@ date :: Parser UTCTime
 date = decided p
   where
     p = asUTC <$> dateS
+
+month :: Parser Integer
+month = monthOrdinal
