@@ -25,7 +25,13 @@ intervalTests = test [
       case testParse date "basic date" "4 May 2020" of
         (Left error)   -> assertFailure (show error)
         (Right actual) -> assertEqual "" (show actual) expected
-  --  ,
+  ,
+  "parse long month" ~: do
+      let expected = assertEither $ parseDateF "%d %B %Y" "04 January 2020"
+      case testParse date "long month" "4 January 2020" of
+        (Left error)   -> assertFailure (show error)
+        (Right actual) -> assertEqual "" (show actual) expected
+
   -- "parse time on given day" ~: do
   --     let d = parseDate "5 May 2018"
   --     let (Right actual) = testParse (time d) "time" "17:18"

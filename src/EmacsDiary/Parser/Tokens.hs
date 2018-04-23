@@ -6,10 +6,10 @@ import Text.Parsec.String (Parser)
 import qualified Text.Parsec.Token as P
 import Text.Parsec.Language (emptyDef)
 
-lexer    = P.makeTokenParser emptyDef
-numeric  = P.natural lexer
-symbol s = P.symbol lexer s
-lexeme = P.lexeme lexer
+lexer   = P.makeTokenParser emptyDef
+numeric = P.natural lexer
+symbol  = P.symbol lexer
+lexeme  = P.lexeme lexer
 
 digits :: Parser String
 digits = P.lexeme lexer $ many1 digit
