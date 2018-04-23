@@ -27,6 +27,7 @@ showTimeFormat = "%H:%M:%S%z"
 locale = defaultTimeLocale
 \end{code}
 
+\subsection{Date}
 \subsection{Type Definitions}
 
 \blockquote[{\cite[/NewType]{hswiki}}]{%
@@ -49,7 +50,49 @@ instance Show Date where
   show (Date d) = showGregorian d
 \end{code}
 
+\subsubsection{Parsers}
+
+\begin{code}
+dayP :: Parser Int
+dayP  = fromIntegral <$> T.numeric
+
+yearP :: Parser Integer
+yearP = T.numeric
+
+months = [
+  ("January",   1),  ("Jan",       1),
+  ("February",  2),  ("Feb",       2),
+  ("March",     3),  ("Mar",       3),
+  ("April",     4),  ("Apr",       4),
+  ("May",       5),
+  ("June",      6),  ("Jun",       6),
+  ("July",      7),  ("Jul",       7),
+  ("August",    8),  ("Aug",       8),
+  ("September", 9),  ("Sep",       9),
+  ("October",   10), ("Oct",       10),
+  ("November",  11), ("Nov",       11),
+  ("December",  12), ("Dec",       12)
+  ]
+
+keyValueParser :: (String, Int) -> Parser Int
+keyValueParser (m,n) = try (string m) >> return n
+
+monthP :: Parser Int
+monthP = choice $ map keyValueParser months
+
+date :: Parser Date
+date = do
+  d <- dayP
+  m <- T.lexeme monthP
+  y <- yearP
+  return $ Date $ fromGregorian y m d
+\end{code}
+
+\subsection{Time}
+
+\subsubsection{Types}
 \codeline{Time} will represent instances of UTC times.
+
 \begin{code}
 data Time = Time { timeHour   :: Integer
                  , timeMinute :: Integer
@@ -83,74 +126,11 @@ addTime :: UTCTime -> Time -> UTCTime
 addTime a t = addUTCTime (timeToNDiff t) a
 \end{code}
 
-\subsection{Parsers}
+\subsubsection{Parsers}
 
 \begin{code}
-decided :: Parser (Either String a) -> Parser a
-decided p = do
-        e <- p
-        case e of
-          (Left s)  -> unexpected s
-          (Right r) -> return r
-
 timeS :: Parser Time
 timeS = timeFromList <$> sepBy1 T.numeric (T.symbol ":")
-
-dateFormats = [
-  "%d %b %Y",
-  "%d %B %Y",
-  "%e %b %Y",
-  "%e %B %Y",
-  "%F"]
-
---date :: Parser UTCTime
---date = decided p
---  where
---    p = asUTC <$> dateS
-
--- dateString :: Parser String
--- dateString = do
---   void spaces
---   d <- digits
---   m <- word
---   y <- digits
---   return (d:(m:y))
---     -- $ parseDateS (printf "%s %s %s" d m y)
-
-dayP :: Parser Int
-dayP  = fromIntegral <$> T.numeric
-
-yearP :: Parser Integer
-yearP = T.numeric
-
-months = [
-  ("January",   1),  ("Jan",       1),
-  ("February",  2),  ("Feb",       2),
-  ("March",     3),  ("Mar",       3),
-  ("April",     4),  ("Apr",       4),
-  ("May",       5),
-  ("June",      6),  ("Jun",       6),
-  ("July",      7),  ("Jul",       7),
-  ("August",    8),  ("Aug",       8),
-  ("September", 9),  ("Sep",       9),
-  ("October",   10), ("Oct",       10),
-  ("November",  11), ("Nov",       11),
-  ("December",  12), ("Dec",       12)
-  ]
-
-keyValueParser :: (String, Int) -> Parser Int
-keyValueParser (m,n) = try (string m) >> return n
-
-monthP :: Parser Int
-monthP = choice $ map keyValueParser months
-
--- date :: Parser Date
-date :: Parser Day
-date = do
-  d <- dayP
-  m <- T.lexeme monthP
-  y <- yearP
-  return $ fromGregorian y m d
 
 time :: UTCTime -> Parser UTCTime
 time datetime = addTime datetime <$> timeS
