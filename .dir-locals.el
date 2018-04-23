@@ -9,8 +9,3 @@
   (default-directory . "~/Projects/Emacs/emacs-diary-convert/")))
 
 
-
-
-
-
-

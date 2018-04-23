@@ -23,7 +23,7 @@ myParser1 ctor pa pb = do
   b <- pb
   return $ ctor a b
 
--- Minus “do sugar”
+-- Minus “do” sugar
 myParser2 ctor pa pb =
   pa >>= \a -> pb >>= \b -> return $ ctor a b
 

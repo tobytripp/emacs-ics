@@ -20,7 +20,7 @@ import EmacsDiary.Record
 \begin{code}
 recordTests = test [
   "create a DiaryEntry" ~: do
-    let d = parseDate "7 July 2008"
+    let (Right d) = parseTimeF "%e %b %Y" "7 July 2008"
     " 7 July 2008 Chicago, IL" @=? show (DiaryEntry d "Chicago, IL")
   ]
 \end{code}

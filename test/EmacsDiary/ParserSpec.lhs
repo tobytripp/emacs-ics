@@ -11,8 +11,7 @@ import EmacsDiary.Parser (diary)
 
 \begin{code}
 tests = test [
-  "truth" ~: 1 @=? 1
---   "parse empty date-line: '7 July 2008'" ~: do
---       assertParser "!!!" " 5 May 2018 00:00" diary "7 July 2008"
+  "parse empty date-line: '7 July 2008'" ~: do
+      assertParser "!!!" "2008-07-07" diary "7 July 2008"
   ]
 \end{code}

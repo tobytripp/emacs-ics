@@ -4,6 +4,7 @@ module EmacsDiary.Parser.IntervalSpec
         ) where
 
 import Test.HUnit
+import Data.Time.Clock (utctDay, UTCTime)
 
 import EmacsDiary.Parser.Interval
 import SpecHelpers
@@ -13,25 +14,36 @@ data MonthYear = MonthYear { md :: Integer, y :: Integer } deriving (Eq)
 instance Show MonthYear where
   show my = (show $ md my) ++ "-" ++ (show $ y my)
 
+assertEither :: Show a => Either String a -> String
+assertEither e = case e of
+  (Left  error)  -> error
+  (Right actual) -> show actual
+
 intervalTests = test [
-  "parse time on given day" ~: do
-      let d = parseDate "5 May 2018"
-      let (Right actual) = testParse (time d) "time" "17:18"
-      " 5 May 2018 17:18" @=? showTime actual
-    ,
-  "parsing short month into numeral" ~: do
-        let (Right actual) = testParse month "month->numeral" "Jan"
-        1 @=? actual
-    ,
-  "parse long month into numeral" ~: do
-        let (Right actual) = testParse month "long-month->numeral" "January"
-        1 @=? actual
-    ,
-  "month parsing consumes the entire word" ~: do
-        assertParser "month parse fail"
-          "1-2018"
-          (MonthYear <$> month <*> year)
-          "January 2018"
+  "parse basic date" ~: do
+      let expected = assertEither $ parseDateF "%d %b %Y" "04 May 2020"
+      case testParse date "basic date" "4 May 2020" of
+        (Left error)   -> assertFailure (show error)
+        (Right actual) -> assertEqual "" (show actual) expected
+  --  ,
+  -- "parse time on given day" ~: do
+  --     let d = parseDate "5 May 2018"
+  --     let (Right actual) = testParse (time d) "time" "17:18"
+  --     " 5 May 2018 17:18" @=? showTime actual
+  --   ,
+  -- "parsing short month" ~: do
+  --       let (Right actual) = testParse month "short month" "1 Jan 2016"
+  --       1 @=? actual
+  --   ,
+  -- "parse long month" ~: do
+  --       let (Right actual) = testParse month "long-month" "4 January 2017"
+  --       1 @=? actual
+  --   ,
+  -- "month parsing consumes the entire word" ~: do
+  --       assertParser "month parse fail"
+  --         "1-2018"
+  --         (MonthYear <$> month <*> year)
+  --         "January 2018"
   -- "parsing valid date" ~: do
   --       let input = "5 May 2018"
   --       let expected = parseDate input

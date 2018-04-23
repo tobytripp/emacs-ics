@@ -7,6 +7,7 @@ import Test.HUnit
 import Text.Printf
 
 import Data.Time.Clock
+import Data.Time.Calendar
 import Data.Time.Format
 
 import Text.Parsec
@@ -20,8 +21,17 @@ Create a date-parser via partial application of @parseTimeOrError@:
 \begin{code}
 acceptOuterWhitespace = True
 
-parseDate :: String -> UTCTime
-parseDate = parseTimeOrError acceptOuterWhitespace defaultTimeLocale "%e %b %Y"
+parseDateF :: String -> String -> Either String Day
+parseDateF fmt s =
+  case parseTimeM acceptOuterWhitespace defaultTimeLocale fmt s :: Maybe UTCTime of
+    Nothing  -> Left $ printf "Failed to parse `%s` with `%s`" s fmt
+    (Just x) -> Right $ utctDay x
+
+parseTimeF :: String -> String -> Either String UTCTime
+parseTimeF fmt s =
+  case parseTimeM acceptOuterWhitespace defaultTimeLocale fmt s :: Maybe UTCTime of
+    Nothing  -> Left $ printf "Failed to parse `%s` with `%s`" s fmt
+    (Just x) -> Right x
 
 showTime :: UTCTime -> String
 showTime = formatTime defaultTimeLocale "%e %b %Y %R"
