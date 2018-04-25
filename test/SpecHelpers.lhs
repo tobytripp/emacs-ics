@@ -16,7 +16,7 @@ import Text.Parsec.String
 
 \subsection{Date Helpers}
 
-Create a date-parser via partial application of @parseTimeOrError@:
+Create a date-parser via partial application of @parseTime*@:
 
 \begin{code}
 acceptOuterWhitespace = True

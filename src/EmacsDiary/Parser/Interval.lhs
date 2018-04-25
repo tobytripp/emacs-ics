@@ -6,25 +6,33 @@ module EmacsDiary.Parser.Interval where
 
 import qualified EmacsDiary.Parser.Tokens as T
 
+import Control.Monad (void)
 import Text.Parsec (
   many, string, count, spaces, digit, many1, choice, (<|>), try, sepBy1, unexpected)
 import Text.Parsec.String (Parser)
-import Data.Time.Clock (
-  addUTCTime,
-  NominalDiffTime,
-  utctDayTime,
-  utctDay,
-  UTCTime)
+import Data.Fixed
 import Data.Time.Calendar (fromGregorian, showGregorian, Day)
-import Data.Time.Format (iso8601DateFormat, formatTime, parseTimeM, defaultTimeLocale)
-import Text.Printf (printf)
-
-import Control.Monad (void)
+import Data.Time.Format (
+  FormatTime(..),
+  iso8601DateFormat,
+  formatTime,
+  parseTimeM,
+  defaultTimeLocale
+  )
 \end{code}
 
+Note the use of \codeline{(..)} to ensure that not only the type, but also its
+constructor is loaded.
+
 \begin{code}
-showTimeFormat = "%H:%M:%S%z"
-locale = defaultTimeLocale
+import Data.Time.Clock (
+  diffTimeToPicoseconds,
+  secondsToDiffTime,
+  addUTCTime,
+  DiffTime,
+  NominalDiffTime,
+  utctDayTime,
+  UTCTime(..))
 \end{code}
 
 \subsection{Date}
@@ -94,33 +102,46 @@ date = do
 \codeline{Time} will represent instances of UTC times.
 
 \begin{code}
-data Time = Time { timeHour   :: Integer
-                 , timeMinute :: Integer
-                 } deriving (Eq)
-instance Show Time where
-         show t = iso8601DateFormat (Just showTimeFormat)
-
-instance Num Time where
-  a + b  = fromInteger $ (seconds a) + (seconds b)
-  a * b  = fromInteger $ (seconds a) * (seconds b)
-  abs    = fromInteger . abs . seconds
-  signum = fromInteger . signum . seconds
-  negate = fromInteger . negate . seconds
-  fromInteger a = Time h m
-    where
-      i = fromInteger a
-      h = quot i 3600
-      m = div s 60
-      s = rem i 3600
+type Time = UTCTime
 
 timeFromList :: [Integer] -> Time
-timeFromList (h:m:_) = Time h m
+timeFromList (h:m:_) =
+  fromInt $ h * 3600 + m * 60
+  where
+    fromInt i = UTCTime epoch (secondsToDiffTime . fromInteger $ i)
+    epoch = fromGregorian 1970 1 1
 
-seconds :: Time -> Integer
-seconds (Time h m)= 3600*h + 60*m
+newtype Seconds = Seconds Integer deriving (Eq, Show)
+instance Num Seconds where
+  (Seconds a) + (Seconds b) = Seconds (a + b)
+  (Seconds a) - (Seconds b) = Seconds (a - b)
+  (Seconds a) * (Seconds b) = Seconds (a * b)
+  negate (Seconds i) = Seconds (negate i)
+  abs (Seconds i)    = Seconds (abs i)
+  signum (Seconds i) = Seconds (signum i)
+  fromInteger i      = Seconds (fromInteger i)
+
+newtype PicoSeconds = PicoSeconds Integer deriving (Eq, Show)
+instance Num PicoSeconds where
+  (PicoSeconds a) + (PicoSeconds b) = PicoSeconds (a + b)
+  (PicoSeconds a) - (PicoSeconds b) = PicoSeconds (a - b)
+  (PicoSeconds a) * (PicoSeconds b) = PicoSeconds (a * b)
+  negate (PicoSeconds i) = PicoSeconds (negate i)
+  abs (PicoSeconds i)    = PicoSeconds (abs i)
+  signum (PicoSeconds i) = PicoSeconds (signum i)
+  fromInteger i          = PicoSeconds (fromInteger i)
+
+fromPicoSeconds :: PicoSeconds -> Seconds
+fromPicoSeconds (PicoSeconds p) = Seconds $ p * 10^12
+
+picoSeconds :: UTCTime -> PicoSeconds
+picoSeconds = PicoSeconds . diffTimeToPicoseconds . utctDayTime
+
+seconds :: Time -> Seconds
+seconds = fromPicoSeconds . picoSeconds
 
 timeToNDiff :: Time -> NominalDiffTime
-timeToNDiff (Time h m) = fromInteger (3600*h + 60*m)
+timeToNDiff = fromInteger . diffTimeToPicoseconds . utctDayTime
 
 addTime :: UTCTime -> Time -> UTCTime
 addTime a t = addUTCTime (timeToNDiff t) a
@@ -129,9 +150,6 @@ addTime a t = addUTCTime (timeToNDiff t) a
 \subsubsection{Parsers}
 
 \begin{code}
-timeS :: Parser Time
-timeS = timeFromList <$> sepBy1 T.numeric (T.symbol ":")
-
-time :: UTCTime -> Parser UTCTime
-time datetime = addTime datetime <$> timeS
+time :: Parser Time
+time = timeFromList <$> sepBy1 T.numeric (T.symbol ":")
 \end{code}
