@@ -23,8 +23,11 @@ tests = test [
       assertEqual "truth"
         [(Record (I.fromYmd 2008 7 7) [])]
         actual
-  -- ,
-  -- "parse date and time with empty description" ~: do
-  --     assertParser "!!!" "2008-07-07 14:30" diary "7 July 2008 14:30"
+  ,
+  "parse date and time with empty description" ~: do
+      let (Right actual) = runParser diary () "parser-spec" "7 July 2008 14:30"
+      assertEqual "Empty Entry"
+        [(Record (I.fromYmd 2008 7 7) [Entry (I.timeFromList [14, 30]) "" ""])]
+        actual
   ]
 \end{code}

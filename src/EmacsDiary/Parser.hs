@@ -8,7 +8,10 @@ import qualified Text.Parsec.Token as P
 import EmacsDiary.Record
 import qualified EmacsDiary.Parser.Interval as I
 
+entry :: Parser Entry
+entry = emptyEntry <$> I.time
+
 record :: Parser Record
-record = emptyRecord <$> I.date
+record = Record <$> I.date <*> many entry
 
 diary = many1 record
