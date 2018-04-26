@@ -7,11 +7,6 @@ Declare the test module and export its tests.
 module EmacsDiary.RecordSpec (recordTests) where
 
 import Test.HUnit
-import Text.Parsec
-import Text.Parsec.String
-import Data.Time.Clock
-import Data.Time.Format
-
 import SpecHelpers
 
 import EmacsDiary.Record
@@ -21,6 +16,6 @@ import EmacsDiary.Record
 recordTests = test [
   "create a DiaryEntry" ~: do
     let (Right d) = parseTimeF "%e %b %Y" "7 July 2008"
-    " 7 July 2008 Chicago, IL" @=? show (DiaryEntry d "Chicago, IL")
+    " 7 July 2008 Chicago, IL" @=? show (Entry d "Chicago, IL")
   ]
 \end{code}
