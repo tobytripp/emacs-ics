@@ -41,12 +41,12 @@ keyValueParser :: (String, Int) -> Parser Int
 keyValueParser (m,n) = try (string m) >> return n
 
 monthP :: Parser Int
-monthP = choice $ map keyValueParser months
+monthP = T.lexeme $ choice $ map keyValueParser months
 
 date :: Parser Date
 date = do
   d <- dayP
-  m <- T.lexeme monthP
+  m <- monthP
   y <- yearP
   return $ Date $ fromGregorian y m d
 \end{code}

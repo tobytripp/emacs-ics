@@ -1,17 +1,23 @@
-module EmacsDiary.Parser (diary) where
+module EmacsDiary.Parser (diary, entry) where
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
 import Text.Parsec.Language (emptyDef)
-import qualified Text.Parsec.Token as P
 
-import EmacsDiary.Record
+import qualified EmacsDiary.Record as Rec
+import qualified EmacsDiary.Parser.Tokens as Tok
 import qualified EmacsDiary.Parser.Interval as I
 
-entry :: Parser Entry
-entry = emptyEntry <$> I.time
+description :: Parser Rec.Description
+description = Tok.phrase
 
-record :: Parser Record
-record = Record <$> I.date <*> many entry
+location :: Parser Rec.Address
+location = Tok.phrase
+
+entry :: Parser Rec.Entry
+entry = Rec.Entry <$> I.time <*> description <*> location
+
+record :: Parser Rec.Record
+record = Rec.Record <$> I.date <*> many entry
 
 diary = many1 record

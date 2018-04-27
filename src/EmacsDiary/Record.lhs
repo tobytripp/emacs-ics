@@ -20,8 +20,8 @@ emptyRecord :: Date -> Record
 emptyRecord d = Record d []
 \end{code}
 
-An \codeline{Entry} is the pairing of an event \emph{time} with a time and
-location.
+An \codeline{Entry} is the pairing of an event \emph{date} with a time,
+description, and location.
 
 \begin{code}
 type Description = String

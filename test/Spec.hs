@@ -6,12 +6,15 @@ import Text.Parsec
 import Text.Parsec.String (Parser)
 import System.Exit (exitSuccess, exitFailure)
 
-import EmacsDiary.Parser.IntervalSpec (intervalTests)
+import qualified EmacsDiary.Parser.IntervalSpec as Interval
 import qualified EmacsDiary.ParserSpec as PSpec
+import qualified EmacsDiary.Parser.TokenSpec as Tokens
 
 allTests = TestList [
-  intervalTests,
-  PSpec.tests]
+  Interval.tests,
+  Tokens.tests,
+  PSpec.tests
+  ]
 
 main :: IO ()
 main = do

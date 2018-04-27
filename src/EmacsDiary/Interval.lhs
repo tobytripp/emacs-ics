@@ -2,7 +2,7 @@
 \section{Date and Time Types}
 
 \begin{code}
-module EmacsDiary.Interval (Date(..), fromYmd, Time, timeFromList) where
+module EmacsDiary.Interval (Date(..), fromYmd, Time(..), timeFromList) where
 
 import Data.Fixed
 import Data.Time.Calendar (fromGregorian, showGregorian, Day)
