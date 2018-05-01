@@ -39,11 +39,6 @@ myParser4 ctor pa pb = ctor <$> pa <*> pb
 whitespace :: Parser ()
 whitespace = void $ many $ oneOf " \n\t"
 
-lexemeAO :: Parser a -> Parser a
-lexemeAO p = do
-  x <- p <* whitespace
-  return x
-
 -----------------------------------------------------------------
 -- 4.1 lexeme http://jakewheat.github.io/intro_to_parsing/#_lexeme
 -- Refactoring to Applicative

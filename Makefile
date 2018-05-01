@@ -3,6 +3,7 @@
 .SUFFIXES :
 .SUFFIXES : .tex .pdf
 
+TEXPATH := /Library/TeX/texbin
 TEX2PDF := /Library/TeX/texbin/pdflatex
 DOCDIR  := ./doc
 SRC     := $(wildcard */*.hs)
@@ -22,4 +23,4 @@ clean:
 	cd $(DOCDIR) && rm -f *.aux *.out *.log *.toc
 
 index.pdf: typeset
-	$(TEX2PDF) index.tex
+	latexmk -pdf index.tex

@@ -1,6 +1,6 @@
 \chapter{Other Monads}
 
-The @Monad@ type\cite[p.~402]{thompson99}:
+The @Monad@ type\autocite[p.~402]{thompson:99}:
 
 \begin{code}
 class Monad m where
@@ -20,12 +20,13 @@ class Monad m where
 \begin{quote}
 From this definition it can be seen that @>>@ acts like @>>=@, except that the
 value returned by the first argument is discarded rather than being passed to
-the second argument. \cite[p.~403]{thompson99}
+the second argument. \autocite[p.~403]{thompson:99}
 \end{quote}
 
-\section{The Identity Monad \cite[p.~404]{thompson99}}
+\section{The Identity Monad}
 
-The identity monad takes a type to itself with definitions:
+The identity monad \autocite[p.~404]{thompson:99} takes a type to itself with
+definitions:
 
 \begin{code}
   m >>= f = f m

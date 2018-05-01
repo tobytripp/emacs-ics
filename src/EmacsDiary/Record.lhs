@@ -24,12 +24,13 @@ An \codeline{Entry} is the pairing of an event \emph{date} with a time,
 description, and location.
 
 \begin{code}
-type Description = String
-type Address = String
-data Entry = Entry { eventTime   :: Time,
-                     description :: Description,
-                     location    :: Address }
-    deriving (Eq, Show)
+data EntryField = Description String
+                | Location String
+                deriving (Eq, Show)
 
-emptyEntry t = Entry t "" ""
+data Entry = Entry { eventTime   :: Time,
+                     fields      :: [EntryField]}
+  deriving (Eq, Show)
+
+emptyEntry t = Entry t [Description ""]
 \end{code}

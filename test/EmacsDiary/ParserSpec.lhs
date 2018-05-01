@@ -7,6 +7,7 @@ import Test.HUnit
 import SpecHelpers
 
 import Text.Parsec (runParser)
+import Text.Printf (printf)
 
 import EmacsDiary.Record
 import qualified EmacsDiary.Interval as I
@@ -18,37 +19,52 @@ tests = test [
   "parse empty date-line: '7 July 2008'" ~: do
       assertParser "!!!" "[2008-07-07: []]" diary "7 July 2008"
   ,
+
   "parsing returns a Record" ~: do
       let (Right actual) = (runParser diary () "parser-spec" "7 July 2008")
       assertEqual "truth"
         [(Record (I.fromYmd 2008 7 7) [])]
         actual
   ,
-  "parse a solitary empty entry" ~: do
-      let input = "  14:30"
-      case runParser entry () "empty entry" input of
+
+  "parse a solitary entry" ~: do
+      let input = "  14:30 entry\n"
+      case runParser entry () input input of
         (Left e)       -> assertFailure $ show e
-        (Right actual) -> assertEqual ""
-          (Entry (I.timeFromList [14, 30]) "" "")
+        (Right actual) -> assertEqual
+          ""
+          (Entry (I.timeFromList [14, 30]) [Description "entry"])
+          actual
   ,
 
-  "parse date and time with empty description" ~: do
-      let input = "7 July 2008 14:30"
-      case runParser diary () "empty description" input of
+  "parse date and time with empty description produces error" ~: do
+      let input = "7 July 2008 14:30\n"
+      case runParser diary () input input of
+        (Left e)  -> assert True
+        (Right r) -> assertFailure
+          (printf "parsing should have failed, but got '%s'" (show r))
+  ,
+
+  "parse date and time with description" ~: do
+      let input = "7 July 2008 14:30 Work on parsers\n"
+      case runParser diary () input input of
         (Left e)       -> assertFailure $ show e
-        (Right actual) -> assertEqual "Empty Entry"
+        (Right actual) -> assertEqual "Non-empty Entry"
           [(Record (I.fromYmd 2008 7 7)
-             [Entry (I.timeFromList [14, 30]) "" ""])]
+             [Entry (I.timeFromList [14, 30])
+               [Description "Work on parsers"]])]
           actual
-  -- ,
-  -- "parse single-line entry" ~: do
-  --     let input = "28 April 2018  13:10 Work on parsers"
-  --     let (Right actual) = runParser diary () "single-line" input
-  --     assertEqual ""
-  --       [(Record (I.fromYmd 2018 4 28)
-  --         [Entry (I.timeFromList [13, 10])
-  --           "Work on parsers"
-  --           ""])]
-  --       actual
+  ,
+
+  "parse multi-line entry" ~: do
+      let input = "7 July 2008 14:30 Work on parsers\n  With gusto!"
+      case runParser diary () input input of
+        (Left e)       -> assertFailure $ show e
+        (Right actual) -> assertEqual "Multi-line entry"
+          [(Record (I.fromYmd 2008 7 7)
+             [Entry (I.timeFromList [14, 30])
+              [Description "Work on parsers\nWith gusto!"]])]
+          actual
+
   ]
 \end{code}

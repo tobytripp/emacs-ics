@@ -1,6 +1,8 @@
 \chapter{The Maybe Monad}
 
-\section{As Described by Computerphile \cite{riley2017}}
+\section{As Described by Computerphile}
+
+\autocite{hutton:computerphile}
 
 \begin{code}
 -- Type and 2 type constuctors: Val and Div
@@ -39,7 +41,7 @@ as:
 \begin{tabular}[b]{p{0.45\linewidth} | p{0.45\linewidth}}
 \hline
 Without `do' notation & With `do' notation \\ \hline
-\begin{code}[frame=shadowbox]
+\begin{code}
 eval' :: Expr -> Maybe Int
 eval' (Val n)   = return n
 eval' (Div x y) =

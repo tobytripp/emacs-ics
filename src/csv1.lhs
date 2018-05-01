@@ -5,7 +5,7 @@
 \begin{code}
   import Text.ParserCombinators.Parsec
 \end{code}
-\cite[\href{http://book.realworldhaskell.org/read/using-parsec.html}{Ch.~16}]{rwh2008}
+\autocite[{Ch.~16}]{osullivan:rwh}
 
 Input type is a sequence of characters, i.e., a Haskell
 \lstinline{String}. \lstinline{String} is the same as \lstinline{[Char]}.  The

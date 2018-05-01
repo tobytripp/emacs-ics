@@ -7,7 +7,7 @@ module EmacsDiary.Parser.Interval where
 import qualified EmacsDiary.Parser.Tokens as T
 import EmacsDiary.Interval
 
-import Text.Parsec (
+import Text.Parsec ((<?>),
   many, string, count, spaces, digit, many1, choice, (<|>), try, sepBy1, unexpected)
 import Text.Parsec.String (Parser)
 import Data.Time.Calendar (fromGregorian)
@@ -55,5 +55,8 @@ date = do
 
 \begin{code}
 time :: Parser Time
-time = timeFromList <$> sepBy1 T.numeric (T.symbol ":")
+time = timeFromList <$> (T.whitespace *> hms) <?> "time"
+  where
+    hms :: Parser [Integer]
+    hms = sepBy1 T.numeric (T.symbol ":")
 \end{code}

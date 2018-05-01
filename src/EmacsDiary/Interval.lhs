@@ -31,7 +31,7 @@ import Data.Time.Clock (
 
 \subsection{Date}
 
-\blockquote[{\cite[/NewType]{hswiki}}]{%
+\blockquote[{\autocite[/NewType]{haskellwiki}}]{%
 A newtype declaration creates a new type in much the same way as data. The
 syntax and usage of newtypes is virtually identical to that of data
 declarations - in fact, you can replace the newtype keyword with data and

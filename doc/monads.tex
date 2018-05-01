@@ -1,11 +1,10 @@
 % -*- coding: utf-8 -*-
-\chapter{``Brian Beckman: Don't Fear the Monad''}
-
-Available on \href{https://youtu.be/ZhuHCtR3xq8}{Youtube} \cite{beckman2012}.
+\chapter{``Don't Fear the Monad''}
 
 Dr. Beckman, astrophysicist and senior software engineer, begins with a basic
-introduction to functional programming as a concept.  Most notably, he focuses
-on the concept of functions as being \textbf{replaceable} by table-lookups.
+introduction to functional programming as a concept \autocite{beckman:monad}.
+Most notably, he focuses on the concept of functions as being
+\textbf{replaceable} by table-lookups.
 
 \section{Outline (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{7:50})}
 
@@ -18,8 +17,8 @@ on the concept of functions as being \textbf{replaceable} by table-lookups.
 
 \section{Notation (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{8:25})}
 
-\begin{description}
-\item [From ``imperative'' to functional notation] :
+\begin{description}[align=parleft,style=sameline,wide]
+\item[From ``imperative'' to functional notation] :
   \begin{itemize}
   \item $int\;x= x \in int$
   \item \codeline{x :: int}
@@ -28,7 +27,7 @@ on the concept of functions as being \textbf{replaceable} by table-lookups.
   \item $int\;f(int\;x)$
   \item \codeline{f :: int -> int}
   \end{itemize}
-\item [Given type variable $a$ :] $\forall a$
+\item[Given type variable $a$ :] $\forall a$
   \begin{itemize}
   \item \codeline[language=Java]{A x}
   \item \codeline[language=Haskell]{x :: a}
@@ -93,7 +92,7 @@ In a programming context, a @Monoid@ guarantees type-consistency over function c
 \section{Monads (\href{https://youtu.be/ZhuHCtR3xq8?t=7m50s}{30:39})}
 
 Given:
-\begin{lstlisting}[frame=trBL, framerule=1pt, label=defM]
+\begin{lstlisting}[frame=trBL, frameround=fttt, framerule=1pt, label=defM]
   x :: a
   f :: a -> M a
   g :: a -> M a

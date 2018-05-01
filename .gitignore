@@ -6,3 +6,13 @@
 *.out
 *.toc
 /doc/X.tex
+*.bbl
+*.blg
+*.bcf
+*.fdb_latexmk
+*.fls
+_region_.*
+/auto
+*.prv
+*.xml
+*.fmt

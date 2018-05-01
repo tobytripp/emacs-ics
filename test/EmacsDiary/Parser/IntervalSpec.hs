@@ -45,6 +45,13 @@ tests = test [
         (Right actual) -> assertEqual "" expected (show actual)
   ,
 
+  "parsing time with leading whitespace" ~: do
+      let expected = assertEither $ parseTimeF "%d/%m/%Y %H%M" "01/01/1970 1700"
+      case testParse time "ws time" "  17:00" of
+        (Left  error)  -> assertFailure (show error)
+        (Right actual) -> assertEqual "" expected (show actual)
+  ,
+
   "parse date and time" ~: do
       let input = "7 July 2008 14:30"
       let expected = "2008-07-07 / 1970-01-01 14:30:00 UTC"
