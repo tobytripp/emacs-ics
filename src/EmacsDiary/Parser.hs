@@ -10,7 +10,8 @@ import qualified EmacsDiary.Parser.Interval as I
 
 description :: Parser Rec.EntryField
 description = Rec.Description <$>
-  Tok.line <?> "description"
+  (Tok.whitespace *>
+  Tok.line <?> "description")
 
 location :: Parser Rec.EntryField
 location = Rec.Location <$>
@@ -23,7 +24,7 @@ field = description <|> location
 entry :: Parser Rec.Entry
 entry = Rec.Entry <$>
   I.time <*>
-  many field
+  many1 field
 
 record :: Parser Rec.Record
 record = Rec.Record <$> I.date <*> many entry

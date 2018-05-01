@@ -57,13 +57,14 @@ tests = test [
   ,
 
   "parse multi-line entry" ~: do
-      let input = "7 July 2008 14:30 Work on parsers\n  With gusto!"
+      let input = "7 July 2008 14:30 Work on parsers\n  With gusto!\n"
       case runParser diary () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multi-line entry"
           [(Record (I.fromYmd 2008 7 7)
              [Entry (I.timeFromList [14, 30])
-              [Description "Work on parsers\nWith gusto!"]])]
+              [Description "Work on parsers",
+               Description "With gusto!"]])]
           actual
 
   ]
