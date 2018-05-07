@@ -7,7 +7,9 @@ module EmacsDiary.Parser.Interval where
 import qualified EmacsDiary.Parser.Tokens as T
 import EmacsDiary.Interval
 
-import Text.Parsec ((<?>),
+import Data.Functor.Identity
+
+import Text.Parsec (Column, Parsec, ParsecT, Stream, (<?>),
   many, string, count, spaces, digit, many1, choice, (<|>), try, sepBy1, unexpected)
 import Text.Parsec.String (Parser)
 import Data.Time.Calendar (fromGregorian)
@@ -16,10 +18,10 @@ import Data.Time.Calendar (fromGregorian)
 \subsection{Date}
 
 \begin{code}
-dayP :: Parser Int
+--dayP :: Parser Int
 dayP  = fromIntegral <$> T.numeric
 
-yearP :: Parser Integer
+--yearP :: Parser Integer
 yearP = T.numeric
 
 months = [
@@ -37,26 +39,23 @@ months = [
   ("December",  12), ("Dec",       12)
   ]
 
-keyValueParser :: (String, Int) -> Parser Int
-keyValueParser (m,n) = try (string m) >> return n
-
 monthP :: Parser Int
-monthP = T.lexeme $ choice $ map keyValueParser months
+monthP = T.lexeme $ choice $
+  map kvp months
+  where
+    kvp :: (String, Int) -> Parser Int
+    kvp (mn,n) = try (string mn) >> return n
 
 date :: Parser Date
-date = do
-  d <- dayP
-  m <- monthP
-  y <- yearP
-  return $ Date $ fromGregorian y m d
+date = fromDmy <$> dayP <*> monthP <*> yearP <?> "date"
 \end{code}
 
 \subsection{Time}
 
 \begin{code}
 time :: Parser Time
-time = timeFromList <$> (T.whitespace *> hms) <?> "time"
-  where
-    hms :: Parser [Integer]
-    hms = sepBy1 T.numeric (T.symbol ":")
+time = do
+  h <- T.whitespace *> try (T.numeric <* T.symbol ":") <|> unexpected "time"
+  m <- T.numeric <|> unexpected "time"
+  return $ makeTime h m
 \end{code}

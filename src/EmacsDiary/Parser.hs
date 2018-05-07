@@ -1,32 +1,37 @@
-module EmacsDiary.Parser (diary, entry) where
+module EmacsDiary.Parser (diary, record, entry) where
 
+import Data.Char (isSpace)
 import Text.Parsec
 import Text.Parsec.String (Parser)
 import Text.Parsec.Language (emptyDef)
+
+import Control.Monad (void, ap)
 
 import qualified EmacsDiary.Record as Rec
 import qualified EmacsDiary.Parser.Tokens as Tok
 import qualified EmacsDiary.Parser.Interval as I
 
-description :: Parser Rec.EntryField
+--description :: DiaryParser Rec.EntryField
 description = Rec.Description <$>
-  (Tok.whitespace *>
-  Tok.line <?> "description")
+  (Tok.line <?> "description")
 
-location :: Parser Rec.EntryField
+--location :: DiaryParser Rec.EntryField
 location = Rec.Location <$>
-  (Tok.whitespace *>
-  Tok.keyword "Location:" *>
-  Tok.line <?> "location")
+  (Tok.keyword "Location:" *>
+   Tok.line <?> "location")
 
-field = description <|> location
+fields :: Parser [Rec.EntryField]
+fields = Tok.lexeme $ sepBy1 field sep
+  where
+    field = (description <|> location) <?> "entry field"
+    sep = try (endOfLine *> Tok.indent 4)
+      <|> (Tok.symbol ";")
+      <?> "field-separator"
 
 entry :: Parser Rec.Entry
-entry = Rec.Entry <$>
-  I.time <*>
-  many1 field
+entry = Rec.Entry <$> I.time <*> fields <?> "Record.Entry"
 
 record :: Parser Rec.Record
-record = Rec.Record <$> I.date <*> many entry
+record = Rec.Record <$> I.date <*> (Tok.lexeme $ many entry) <?> "Record"
 
 diary = manyTill record eof

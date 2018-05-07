@@ -2,7 +2,7 @@
 \section{Date and Time Types}
 
 \begin{code}
-module EmacsDiary.Interval (Date(..), fromYmd, Time(..), timeFromList) where
+module EmacsDiary.Interval (Date(..), fromDmy, Time(..), makeTime, timeFromList) where
 
 import Data.Fixed
 import Data.Time.Calendar (fromGregorian, showGregorian, Day)
@@ -50,8 +50,8 @@ I’ll \codeline{show} \codeline{Date} using the ISO-8601 format:
 instance Show Date where
   show (Date d) = showGregorian d
 
-fromYmd :: Integer -> Int -> Int -> Date
-fromYmd y m d = Date $ fromGregorian y m d
+fromDmy :: Int -> Int -> Integer -> Date
+fromDmy d m y = Date $ fromGregorian y m d
 \end{code}
 
 \codeline{Time} will represent instances of UTC times.
@@ -59,12 +59,20 @@ fromYmd y m d = Date $ fromGregorian y m d
 \begin{code}
 type Time = UTCTime
 
-timeFromList :: [Integer] -> Time
-timeFromList (h:m:_) =
+makeTime :: Integer -> Integer -> Time
+makeTime h m =
   fromInt $ h * 3600 + m * 60
   where
     fromInt i = UTCTime epoch (secondsToDiffTime . fromInteger $ i)
-    epoch = fromGregorian 1970 1 1
+    epoch     = fromGregorian 1970 1 1
+
+timeFromList :: [Integer] -> Time
+timeFromList (h:xs) =
+  makeTime h m
+  where
+    m = case take 1 xs of
+      [] -> 0
+      (m:_) -> m
 
 newtype Seconds = Seconds Integer deriving (Eq, Show)
 instance Num Seconds where

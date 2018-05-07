@@ -8,3 +8,4 @@
  (literate-haskell-mode
   (default-directory . "~/Projects/Emacs/emacs-diary-convert/")))
 
+
