@@ -119,8 +119,18 @@ data Interval = Interval { start  :: Time,
                          } deriving (Eq)
 
 instance Show Interval where
-  show (Interval a b) = (showT a) ++ "-" ++ (showTZ b)
-    where
-      showT  = formatTime defaultTimeLocale "%H:%M"
-      showTZ = formatTime defaultTimeLocale "%H:%M %Z"
+  show (Interval a b)
+    | a == b     = showTZ a
+    | otherwise = (showT a) ++ "-" ++ (showTZ b)
+
+showT  = formatTime defaultTimeLocale "%H:%M"
+showTZ = formatTime defaultTimeLocale "%H:%M %Z"
+\end{code}
+
+Constructor that can handle a missing end-time.
+
+\begin{code}
+mkTime :: Time -> Maybe Time -> Interval
+mkTime a (Just b) = Interval a b
+mkTime a Nothing  = Interval a a
 \end{code}

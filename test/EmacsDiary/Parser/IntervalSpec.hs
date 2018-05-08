@@ -65,4 +65,11 @@ tests = test [
       case testParse interval input input of
         (Left error)   -> assertFailure $ show error
         (Right actual) -> assertEqual "" "11:00-12:00 UTC" (show actual)
+  ,
+
+  "time-interval with no specified ending" ~: do
+      let input = "  11:35"
+      case testParse interval input input of
+        (Left error)   -> assertFailure $ show error
+        (Right actual) -> assertEqual "" "11:35 UTC" (show actual)
   ]

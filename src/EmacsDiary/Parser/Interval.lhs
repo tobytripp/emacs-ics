@@ -9,7 +9,7 @@ import EmacsDiary.Interval
 
 import Data.Functor.Identity
 
-import Text.Parsec (Column, Parsec, ParsecT, Stream, (<?>),
+import Text.Parsec (option, Column, Parsec, ParsecT, Stream, (<?>),
   many, string, count, spaces, digit, many1, choice, (<|>), try, sepBy1, unexpected)
 import Text.Parsec.String (Parser)
 import Data.Time.Calendar (fromGregorian)
@@ -64,9 +64,9 @@ time = do
 
 \begin{code}
 interval :: Parser Interval
--- interval = Interval <$> (time <* T.symbol "-") *> time <?> "interval"
+-- interval = Interval <$> time <*> (T.symbol "-" *> time) <?> "interval"
 interval = do
   t1 <- try time <|> unexpected "start time"
-  t2 <- try (T.symbol "-" *> time)
+  t2 <- option t1 (T.symbol "-" *> time)
   return $ Interval t1 t2
 \end{code}
