@@ -11,14 +11,16 @@ import qualified EmacsDiary.Record as Rec
 import qualified EmacsDiary.Parser.Tokens as Tok
 import qualified EmacsDiary.Parser.Interval as I
 
---description :: DiaryParser Rec.EntryField
-description = Rec.Description <$>
-  (Tok.line <?> "description")
+diary :: Parser [Rec.Record]
+diary = manyTill record eof
 
---location :: DiaryParser Rec.EntryField
-location = Rec.Location <$>
-  (Tok.keyword "Location:" *>
-   Tok.line <?> "location")
+
+record :: Parser Rec.Record
+record = Rec.Record <$> I.date <*> (Tok.lexeme $ many entry) <?> "Record"
+
+entry :: Parser Rec.Entry
+entry = Rec.Entry <$> I.interval <*> fields <?> "Record.Entry"
+
 
 fields :: Parser [Rec.EntryField]
 fields = Tok.lexeme $ sepBy1 field sep
@@ -28,10 +30,10 @@ fields = Tok.lexeme $ sepBy1 field sep
       <|> (Tok.symbol ";")
       <?> "field-separator"
 
-entry :: Parser Rec.Entry
-entry = Rec.Entry <$> I.interval <*> fields <?> "Record.Entry"
 
-record :: Parser Rec.Record
-record = Rec.Record <$> I.date <*> (Tok.lexeme $ many entry) <?> "Record"
+description = Rec.Description <$>
+  (Tok.line <?> "description")
 
-diary = manyTill record eof
+location = Rec.Location <$>
+  (Tok.keyword "Location:" *>
+   Tok.line <?> "location")
