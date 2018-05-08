@@ -59,3 +59,14 @@ time = do
   m <- T.numeric <|> unexpected "time"
   return $ makeTime h m
 \end{code}
+
+\subsection{Interval}
+
+\begin{code}
+interval :: Parser Interval
+-- interval = Interval <$> (time <* T.symbol "-") *> time <?> "interval"
+interval = do
+  t1 <- try time <|> unexpected "start time"
+  t2 <- try (T.symbol "-" *> time)
+  return $ Interval t1 t2
+\end{code}

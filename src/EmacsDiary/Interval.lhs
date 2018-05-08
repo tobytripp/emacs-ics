@@ -2,7 +2,7 @@
 \section{Date and Time Types}
 
 \begin{code}
-module EmacsDiary.Interval (Date(..), fromDmy, Time(..), makeTime, timeFromList) where
+module EmacsDiary.Interval (Date(..), fromDmy, Time(..), makeTime, timeFromList, Interval(..)) where
 
 import Data.Fixed
 import Data.Time.Calendar (fromGregorian, showGregorian, Day)
@@ -90,7 +90,7 @@ instance Num PicoSeconds where
   (PicoSeconds a) - (PicoSeconds b) = PicoSeconds (a - b)
   (PicoSeconds a) * (PicoSeconds b) = PicoSeconds (a * b)
   negate (PicoSeconds i) = PicoSeconds (negate i)
-  abs (PicoSeconds i)    = PicoSeconds (abs i)
+  abs    (PicoSeconds i) = PicoSeconds (abs i)
   signum (PicoSeconds i) = PicoSeconds (signum i)
   fromInteger i          = PicoSeconds (fromInteger i)
 
@@ -108,4 +108,19 @@ timeToNDiff = fromInteger . diffTimeToPicoseconds . utctDayTime
 
 addTime :: UTCTime -> Time -> UTCTime
 addTime a t = addUTCTime (timeToNDiff t) a
+\end{code}
+
+
+\codeline{Interval} will represent a “range” of \codeline{Time}s.
+
+\begin{code}
+data Interval = Interval { start  :: Time,
+                           finish :: Time
+                         } deriving (Eq)
+
+instance Show Interval where
+  show (Interval a b) = (showT a) ++ "-" ++ (showTZ b)
+    where
+      showT  = formatTime defaultTimeLocale "%H:%M"
+      showTZ = formatTime defaultTimeLocale "%H:%M %Z"
 \end{code}

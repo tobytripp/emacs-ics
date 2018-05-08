@@ -58,4 +58,11 @@ tests = test [
       case testParse (DateTime <$> date <*> time) "date-time" input of
         (Left error)   -> assertFailure (show error)
         (Right actual) -> assertEqual "" expected (show actual)
+  ,
+
+  "parsing a time-range" ~: do
+      let input = "  11:00-12:00"
+      case testParse interval input input of
+        (Left error)   -> assertFailure $ show error
+        (Right actual) -> assertEqual "" "11:00-12:00 UTC" (show actual)
   ]
