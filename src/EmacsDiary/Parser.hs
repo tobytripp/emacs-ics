@@ -29,7 +29,7 @@ fields = Tok.lexeme $ sepBy1 field sep
       <?> "field-separator"
 
 entry :: Parser Rec.Entry
-entry = Rec.Entry <$> I.time <*> fields <?> "Record.Entry"
+entry = Rec.Entry <$> I.interval <*> fields <?> "Record.Entry"
 
 record :: Parser Rec.Record
 record = Rec.Record <$> I.date <*> (Tok.lexeme $ many entry) <?> "Record"

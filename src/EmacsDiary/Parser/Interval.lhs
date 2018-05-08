@@ -64,7 +64,6 @@ time = do
 
 \begin{code}
 interval :: Parser Interval
--- interval = Interval <$> time <*> (T.symbol "-" *> time) <?> "interval"
 interval = do
   t1 <- try time <|> unexpected "start time"
   t2 <- option t1 (T.symbol "-" *> time)

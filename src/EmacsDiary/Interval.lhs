@@ -2,7 +2,7 @@
 \section{Date and Time Types}
 
 \begin{code}
-module EmacsDiary.Interval (Date(..), fromDmy, Time(..), makeTime, timeFromList, Interval(..)) where
+module EmacsDiary.Interval (Date(..), fromDmy, Time(..), makeTime, makeInterval, Interval(..), mkInterval) where
 
 import Data.Fixed
 import Data.Time.Calendar (fromGregorian, showGregorian, Day)
@@ -117,7 +117,12 @@ addTime a t = addUTCTime (timeToNDiff t) a
 data Interval = Interval { start  :: Time,
                            finish :: Time
                          } deriving (Eq)
+\end{code}
 
+The \codeline{Show} instance for \codeline{Interval} demonstrates Haskell
+“guards” in function definitions.
+
+\begin{code}
 instance Show Interval where
   show (Interval a b)
     | a == b     = showTZ a
@@ -127,10 +132,16 @@ showT  = formatTime defaultTimeLocale "%H:%M"
 showTZ = formatTime defaultTimeLocale "%H:%M %Z"
 \end{code}
 
-Constructor that can handle a missing end-time.
+Constructors that can handle a missing end-time.
 
 \begin{code}
-mkTime :: Time -> Maybe Time -> Interval
-mkTime a (Just b) = Interval a b
-mkTime a Nothing  = Interval a a
+mkInterval :: Time -> Maybe Time -> Interval
+mkInterval a (Just b) = Interval a b
+mkInterval a Nothing  = Interval a a
+
+mkTime :: Time -> Interval
+mkTime t = mkInterval t Nothing
+
+makeInterval :: Integer -> Integer -> Interval
+makeInterval h m = mkTime $ makeTime h m
 \end{code}

@@ -28,7 +28,7 @@ tests = test [
   "parse a solitary entry" ~: do
       let input = "  14:30 entry\n"
       assertParsesTo entry input
-        (Entry (I.timeFromList [14, 30]) [Description "entry"])
+        (Entry (I.makeInterval 14 30) [Description "entry"])
   ,
 
   "parse multi-element entry" ~: do
@@ -38,7 +38,7 @@ tests = test [
             "    field3"
             ]
       assertParsesTo entry input
-        (Entry (I.timeFromList [14, 30])
+        (Entry (I.makeInterval 14 30)
           [Description "field1",
             Description "field2",
             Description "field3"])
@@ -50,7 +50,7 @@ tests = test [
             "Other Text"
             ]
       assertParsesTo entry input
-        (Entry (I.timeFromList [14, 30])
+        (Entry (I.makeInterval 14 30)
           [Description "field1",
             Description "field2"])
   ,
@@ -60,8 +60,8 @@ tests = test [
             "  14:30 field1",
             "  15:30 field2"]
       assertParsesTo (many entry) input
-        [(Entry (I.timeFromList [14, 30]) [Description "field1"]),
-         (Entry (I.timeFromList [15, 30]) [Description "field2"])]
+        [(Entry (I.makeInterval 14 30) [Description "field1"]),
+         (Entry (I.makeInterval 15 30) [Description "field2"])]
   ,
 
   "parse semicolon separator" ~: do
@@ -70,7 +70,7 @@ tests = test [
             "    field3"
             ]
       assertParsesTo entry input
-        (Entry (I.timeFromList [14, 30])
+        (Entry (I.makeInterval 14 30)
           [Description "field1",
             Description "field2",
             Description "field3"])
@@ -93,7 +93,7 @@ tests = test [
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
       assertParsesTo record input
         (Record (I.fromDmy 7 7 2008)
-          [Entry (I.timeFromList [14, 30])
+          [Entry (I.makeInterval 14 30)
             [Description "Work on parsers"]])
   ,
 
@@ -101,7 +101,7 @@ tests = test [
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
       assertParsesTo diary input
         [(Record (I.fromDmy 7 7 2008)
-           [Entry (I.timeFromList [14, 30])
+           [Entry (I.makeInterval 14 30)
              [Description "Work on parsers"]])]
   ,
 
@@ -114,7 +114,7 @@ tests = test [
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multi-line entry"
           [(Record (I.fromDmy 7 7 2008)
-             [Entry (I.timeFromList [14, 30])
+             [Entry (I.makeInterval 14 30)
               [Description "Work on parsers",
                Description "With gusto!"]])]
           actual
@@ -128,10 +128,10 @@ tests = test [
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multiple records"
           [(Record (I.fromDmy 7 7 2008)
-             [Entry (I.timeFromList [14, 30])
+             [Entry (I.makeInterval 14 30)
               [Description "Work on parsers"]]),
             (Record (I.fromDmy 7 7 2008)
-             [Entry (I.timeFromList [15, 15])
+             [Entry (I.makeInterval 15 15)
               [Description "Celebrate"]])]
           actual
   ]

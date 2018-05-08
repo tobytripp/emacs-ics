@@ -28,7 +28,7 @@ data EntryField = Description String
                 | Location String
                 deriving (Eq, Show)
 
-data Entry = Entry { eventTime   :: Time,
+data Entry = Entry { eventTime   :: Interval,
                      fields      :: [EntryField]}
   deriving (Eq, Show)
 

@@ -10,12 +10,14 @@ import Test.HUnit
 import SpecHelpers
 
 import EmacsDiary.Record
+import qualified EmacsDiary.Interval as I
 \end{code}
 
 \begin{code}
 recordTests = test [
   "create a DiaryEntry" ~: do
     let (Right d) = parseTimeF "%e %b %Y" "7 July 2008"
-    " 7 July 2008 Chicago, IL" @=? show (Entry d [Location "Chicago, IL"])
+    let t = I.mkInterval d Nothing
+    " 7 July 2008 Chicago, IL" @=? show (Entry t [Location "Chicago, IL"])
   ]
 \end{code}
