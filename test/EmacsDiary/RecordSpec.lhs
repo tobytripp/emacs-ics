@@ -11,6 +11,7 @@ import SpecHelpers
 
 import EmacsDiary.Record
 import qualified EmacsDiary.Interval as I
+import qualified EmacsDiary.Ics as ICS
 \end{code}
 
 \begin{code}
@@ -37,12 +38,13 @@ recordTests = test [
           , "END:VEVENT"
           , "END:VCALENDAR"
           ]
-    let input = Diary [Record (I.fromDmy 7 7 2008)
-                  [Entry (I.makeInterval 12 00)
-                    [Description "Happy Birthday, Son!"],
-                   Entry (I.mkInterval (I.makeTime 13 00) (Just (I.makeTime 14 00)))
-                    [Description "Eat Cake."]]]
+    let e1 = Entry (I.makeInterval 12 00) [Description "Happy Birthday, Son!"]
+    let e2 = Entry (I.mkInterval (I.makeTime 13 00) (Just (I.makeTime 14 00)))
+              [Description "Eat Cake."]
+    let input = Diary [
+          push e1 $ push e2 (empty (I.fromDmy 7 7 2008))
+          ]
 
-    assertEqual "" expected (toIcs input)
+    assertEqual "" expected (ICS.toIcs input)
   ]
 \end{code}

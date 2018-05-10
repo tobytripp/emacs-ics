@@ -4,22 +4,36 @@ module EmacsDiary.Record where
 import EmacsDiary.Interval
 \end{code}
 
-A \codeline{DiaryDate} specifies a collection of \codeline{DiaryEntry}s for a
+A \codeline{Diary} specifies a collection of \codeline{Records}s; a
+\codeline{Record} is a collection of \codeline{Entries} for a
 given calendar date.
 
 \begin{code}
 data Diary = Diary [Record]
+data Record = Record { day :: Day
+                     , entries :: Entries }
+              deriving (Eq, Show)
 
-data Record = Record { date    :: Date
-                     , entries :: [Entry] }
-  deriving (Eq)
+data Day = Singular { date :: Date }
+         | Repeating { weekDay :: WeekDay }
+  deriving (Eq, Show)
 
-instance Show Record where
-  show Record {date=d, entries=es} =
-    (show d) ++ ": [" ++  unwords (map show es) ++ "]"
+empty :: Date -> Record
+empty d = Record (Singular d) []
 
-emptyRecord :: Date -> Record
-emptyRecord d = Record d []
+push :: Entry -> Record -> Record
+push e (Record d es) = Record d (e:es)
+
+data WeekDay = Sunday
+             | Monday
+             | Tuesday
+             | Wednesday
+             | Thursday
+             | Friday
+             | Saturday
+  deriving (Eq, Show)
+
+type Entries = [Entry]
 \end{code}
 
 An \codeline{Entry} is the pairing of an event \emph{date} with a time,
@@ -34,27 +48,6 @@ data Entry = Entry { eventTime   :: Interval,
                      fields      :: [EntryField]}
   deriving (Eq, Show)
 
-emptyEntry t = Entry t [Description ""]
-\end{code}
-
-Now, to emit ICS from a parsed \codeline{Record}:
-
-\begin{code}
-class Ics a where
-  toIcs :: a -> String
-
-instance Ics Diary where
-  toIcs (Diary []) = ""
-  toIcs (Diary rs) = "BEGIN:VCALENDAR\n"
-    ++ (unlines $ map toIcs rs)
-    ++ "END:VCALENDAR\n"
-
-instance Ics Record where
-  toIcs r@(Record _ []) = ""
-  toIcs r@(Record _ es) = unlines $ map toIcs es
-
-
-instance Ics Entry where
-  toIcs e = "BEGIN:VEVENT\n"
-    ++ "END:VEVENT\n"
+entry :: Interval -> [String] -> Entry
+entry t ds = Entry t $ map Description ds
 \end{code}

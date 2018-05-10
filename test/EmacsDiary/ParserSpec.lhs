@@ -9,7 +9,7 @@ import SpecHelpers
 import Text.Parsec (runParser, many)
 import Text.Printf (printf)
 
-import EmacsDiary.Record
+import qualified EmacsDiary.Record as R
 import qualified EmacsDiary.Interval as I
 import EmacsDiary.Parser (diary, record, entry)
 \end{code}
@@ -28,7 +28,7 @@ tests = test [
   "parse a solitary entry" ~: do
       let input = "  14:30 entry\n"
       assertParsesTo entry input
-        (Entry (I.makeInterval 14 30) [Description "entry"])
+        (R.entry (I.makeInterval 14 30) ["entry"])
   ,
 
   "parse multi-element entry" ~: do
@@ -38,10 +38,7 @@ tests = test [
             "    field3"
             ]
       assertParsesTo entry input
-        (Entry (I.makeInterval 14 30)
-          [Description "field1",
-            Description "field2",
-            Description "field3"])
+        (R.entry (I.makeInterval 14 30) ["field1", "field2", "field3"])
   ,
 
   "requires leading whitespace for entry" ~: do
@@ -50,9 +47,7 @@ tests = test [
             "Other Text"
             ]
       assertParsesTo entry input
-        (Entry (I.makeInterval 14 30)
-          [Description "field1",
-            Description "field2"])
+        (R.entry (I.makeInterval 14 30) ["field1", "field2"])
   ,
 
   "entry with combinator" ~: do
@@ -60,8 +55,8 @@ tests = test [
             "  14:30 field1",
             "  15:30 field2"]
       assertParsesTo (many entry) input
-        [(Entry (I.makeInterval 14 30) [Description "field1"]),
-         (Entry (I.makeInterval 15 30) [Description "field2"])]
+        [(R.entry (I.makeInterval 14 30) ["field1"]),
+         (R.entry (I.makeInterval 15 30) ["field2"])]
   ,
 
   "parse semicolon separator" ~: do
@@ -70,10 +65,7 @@ tests = test [
             "    field3"
             ]
       assertParsesTo entry input
-        (Entry (I.makeInterval 14 30)
-          [Description "field1",
-            Description "field2",
-            Description "field3"])
+        (R.entry (I.makeInterval 14 30) ["field1", "field2", "field3"])
   ,
 
   "parse date and time with empty description produces error" ~: do
@@ -86,23 +78,20 @@ tests = test [
 
   "record parsing returns a Record" ~: do
       let input = "7 July 2008\n"
-      assertParsesTo diary input [(Record (I.fromDmy 7 7 2008) [])]
+      assertParsesTo diary input [R.empty (I.fromDmy 7 7 2008)]
   ,
 
   "record parser" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
       assertParsesTo record input
-        (Record (I.fromDmy 7 7 2008)
-          [Entry (I.makeInterval 14 30)
-            [Description "Work on parsers"]])
+        (R.push (R.entry (I.makeInterval 14 30) ["Work on parsers"])
+          (R.empty (I.fromDmy 7 7 2008)))
   ,
 
   "parse date and time with description" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      assertParsesTo diary input
-        [(Record (I.fromDmy 7 7 2008)
-           [Entry (I.makeInterval 14 30)
-             [Description "Work on parsers"]])]
+      let e = R.entry (I.makeInterval 14 30) ["Work on parsers"]
+      assertParsesTo diary input [R.push e (R.empty (I.fromDmy 7 7 2008))]
   ,
 
   "parse multi-line entry" ~: do
@@ -110,29 +99,31 @@ tests = test [
             "7 July 2008 14:30 Work on parsers",
             "    With gusto!",
             ""]
+      let e = R.entry (I.makeInterval 14 30) ["Work on parsers", "With gusto!"]
       case runParser diary () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multi-line entry"
-          [(Record (I.fromDmy 7 7 2008)
-             [Entry (I.makeInterval 14 30)
-              [Description "Work on parsers",
-               Description "With gusto!"]])]
+          [R.push e $ R.empty (I.fromDmy 7 7 2008)]
           actual
   ,
+
+  -- "weekday entries" ~: do
+  --     let input = "Wednesday 08:00 Wake up"
+  --     let e = R.entry (I.makeInterval 8 0) ["Wake up"]
+  --     assertParsesTo diary input [R.push e (R.Record (R.Repeating R.Wednesday) [])]
+  --     ,
 
   "parse multiple records" ~: do
       let input = unlines [
             "7 July 2008 14:30 Work on parsers",
             "7 July 2008 15:15 Celebrate"]
+      let e1 = R.entry (I.makeInterval 14 30) ["Work on parsers"]
+      let e2 = R.entry (I.makeInterval 15 15) ["Celebrate"]
       case runParser diary () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multiple records"
-          [(Record (I.fromDmy 7 7 2008)
-             [Entry (I.makeInterval 14 30)
-              [Description "Work on parsers"]]),
-            (Record (I.fromDmy 7 7 2008)
-             [Entry (I.makeInterval 15 15)
-              [Description "Celebrate"]])]
+          [(R.push e1 $ R.empty (I.fromDmy 7 7 2008)),
+           (R.push e2 $ R.empty (I.fromDmy 7 7 2008))]
           actual
   ]
 \end{code}

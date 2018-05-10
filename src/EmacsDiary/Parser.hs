@@ -14,9 +14,11 @@ import qualified EmacsDiary.Parser.Interval as I
 diary :: Parser [Rec.Record]
 diary = manyTill record eof
 
-
 record :: Parser Rec.Record
-record = Rec.Record <$> I.date <*> (Tok.lexeme $ many entry) <?> "Record"
+record = Rec.Record <$> day <*> (Tok.lexeme $ many entry) <?> "Record"
+
+day :: Parser Rec.Day
+day = Rec.Singular <$> I.date <?> "Day"
 
 entry :: Parser Rec.Entry
 entry = Rec.Entry <$> I.interval <*> fields <?> "Record.Entry"
