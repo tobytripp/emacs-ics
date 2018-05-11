@@ -1,7 +1,10 @@
 \begin{code}
 module EmacsDiary.Ics where
 
+import Text.Printf (printf)
+
 import EmacsDiary.Record
+import EmacsDiary.Interval
 \end{code}
 
 Exporting parsed diary entries to @.ics@ files.
@@ -22,6 +25,7 @@ An Emacs \codeline{Diary} is a @VCALENDAR@ containing the @VEVENT@s of its
 instance Ics Diary where
   toIcs (Diary []) = ""
   toIcs (Diary rs) = "BEGIN:VCALENDAR\n"
+    ++ "VERSION:2.0\n"
     ++ (unlines $ map toIcs rs)
     ++ "END:VCALENDAR\n"
 \end{code}
@@ -39,6 +43,19 @@ Each \codeline{Entry} is a @VEVENT@.
 
 \begin{code}
 instance Ics Entry where
-  toIcs e = "BEGIN:VEVENT\n"
+  toIcs (Entry t fs) = "BEGIN:VEVENT\n"
+    ++ toIcs t
+    ++ edata fs
     ++ "END:VEVENT\n"
+    where
+      edata (s:es) = (summary s) ++ (unlines $ map show es)
+      summary (Description s) = "SUMMARY:" ++ s ++ "\n"
+\end{code}
+
+\codeline{Interval} emits a start and end.
+
+\begin{code}
+instance Ics Interval where
+  toIcs (Interval start end) =
+    printf "DTSTART:%s\nDTEND:%s\n" (show start) (show end)
 \end{code}

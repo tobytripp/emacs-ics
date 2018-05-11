@@ -2,15 +2,21 @@
 \section{Date and Time Types}
 
 \begin{code}
-module EmacsDiary.Interval (Date(..), fromDmy, Time(..), makeTime, makeInterval, Interval(..), mkInterval) where
+module EmacsDiary.Interval (
+  Date(..)
+  , date
+  , epoch
+  , Time(..)
+  , makeTime
+  , instant
+  , Interval(..)
+  , mkInterval
+  ) where
 
 import Data.Fixed
 import Data.Time.Calendar (fromGregorian, showGregorian, Day)
 import Data.Time.Format (
-  FormatTime(..),
-  iso8601DateFormat,
   formatTime,
-  parseTimeM,
   defaultTimeLocale
   )
 \end{code}
@@ -42,33 +48,53 @@ it. }
 
 \begin{code}
 newtype Date = Date Day deriving (Eq)
+newtype Time = Time UTCTime deriving (Eq)
+epoch = Date $ fromGregorian 1970 1 1
 \end{code}
 
-I’ll \codeline{show} \codeline{Date} using the ISO-8601 format:
+\codeline{Interval} will represent a “range” of \codeline{Time}s.
+
+\begin{code}
+data Interval = Interval { start  :: Time,
+                           finish :: Time
+                         } deriving (Eq)
+\end{code}
+
+The \codeline{Show} instance for \codeline{Interval} demonstrates Haskell
+“guards” in function definitions.
+
+\begin{code}
+instance Show Interval where
+  show (Interval a b)
+    | a == b     = showTZ a
+    | otherwise = (showT a) ++ "-" ++ (showTZ b)
+
+showT  (Time t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M" t
+showTZ (Time t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
+\end{code}
 
 \begin{code}
 instance Show Date where
-  show (Date d) = showGregorian d
+  show (Date d) = formatTime defaultTimeLocale "%Y%m%d" d
+instance Show Time where
+  show (Time t)= formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
 
-fromDmy :: Int -> Int -> Integer -> Date
-fromDmy d m y = Date $ fromGregorian y m d
+date :: Int -> Int -> Integer -> Date
+date d m y = Date $  fromGregorian y m d
 \end{code}
 
-\codeline{Time} will represent instances of UTC times.
-
 \begin{code}
-type Time = UTCTime
-
-makeTime :: Integer -> Integer -> Time
-makeTime h m =
-  fromInt $ h * 3600 + m * 60
+makeTime :: Date -> Integer -> Integer -> Time
+makeTime (Date d) h m =
+  Time . fromInt $ secs
   where
-    fromInt i = UTCTime epoch (secondsToDiffTime . fromInteger $ i)
-    epoch     = fromGregorian 1970 1 1
+    secs      = h * 3600 + m * 60
+    fromInt i = UTCTime d (secondsToDiffTime . fromInteger $ i)
+
 
 timeFromList :: [Integer] -> Time
 timeFromList (h:xs) =
-  makeTime h m
+  makeTime epoch h m
   where
     m = case take 1 xs of
       [] -> 0
@@ -97,40 +123,20 @@ instance Num PicoSeconds where
 fromPicoSeconds :: PicoSeconds -> Seconds
 fromPicoSeconds (PicoSeconds p) = Seconds $ p * 10^12
 
-picoSeconds :: UTCTime -> PicoSeconds
-picoSeconds = PicoSeconds . diffTimeToPicoseconds . utctDayTime
+picoSeconds :: Time -> PicoSeconds
+picoSeconds (Time t) = PicoSeconds . diffTimeToPicoseconds . utctDayTime $ t
 
 seconds :: Time -> Seconds
 seconds = fromPicoSeconds . picoSeconds
 
 timeToNDiff :: Time -> NominalDiffTime
-timeToNDiff = fromInteger . diffTimeToPicoseconds . utctDayTime
+timeToNDiff (Time t)= fromInteger . diffTimeToPicoseconds . utctDayTime $ t
 
 addTime :: UTCTime -> Time -> UTCTime
 addTime a t = addUTCTime (timeToNDiff t) a
 \end{code}
 
 
-\codeline{Interval} will represent a “range” of \codeline{Time}s.
-
-\begin{code}
-data Interval = Interval { start  :: Time,
-                           finish :: Time
-                         } deriving (Eq)
-\end{code}
-
-The \codeline{Show} instance for \codeline{Interval} demonstrates Haskell
-“guards” in function definitions.
-
-\begin{code}
-instance Show Interval where
-  show (Interval a b)
-    | a == b     = showTZ a
-    | otherwise = (showT a) ++ "-" ++ (showTZ b)
-
-showT  = formatTime defaultTimeLocale "%H:%M"
-showTZ = formatTime defaultTimeLocale "%H:%M %Z"
-\end{code}
 
 Constructors that can handle a missing end-time.
 
@@ -142,6 +148,6 @@ mkInterval a Nothing  = Interval a a
 mkTime :: Time -> Interval
 mkTime t = mkInterval t Nothing
 
-makeInterval :: Integer -> Integer -> Interval
-makeInterval h m = mkTime $ makeTime h m
+instant :: Date -> Integer -> Integer -> Interval
+instant d h m = mkTime $ makeTime d h m
 \end{code}

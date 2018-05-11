@@ -5,9 +5,7 @@
 module EmacsDiary.Parser.Interval where
 
 import qualified EmacsDiary.Parser.Tokens as T
-import EmacsDiary.Interval
-
-import Data.Functor.Identity
+import qualified EmacsDiary.Interval as I
 
 import Text.Parsec (option, Column, Parsec, ParsecT, Stream, (<?>),
   many, string, count, spaces, digit, many1, choice, (<|>), try, sepBy1, unexpected)
@@ -18,11 +16,21 @@ import Data.Time.Calendar (fromGregorian)
 \subsection{Date}
 
 \begin{code}
---dayP :: Parser Int
+date :: Parser I.Date
+date = I.date <$> dayP <*> monthP <*> yearP <?> "date"
+
+dayP :: Parser Int
 dayP  = fromIntegral <$> T.numeric
 
---yearP :: Parser Integer
+yearP :: Parser Integer
 yearP = T.numeric
+
+monthP :: Parser Int
+monthP = T.lexeme $ choice $
+  map kvp months
+  where
+    kvp :: (String, Int) -> Parser Int
+    kvp (mn,n) = try (string mn) >> return n
 
 months = [
   ("January",   1),  ("Jan",       1),
@@ -38,34 +46,28 @@ months = [
   ("November",  11), ("Nov",       11),
   ("December",  12), ("Dec",       12)
   ]
-
-monthP :: Parser Int
-monthP = T.lexeme $ choice $
-  map kvp months
-  where
-    kvp :: (String, Int) -> Parser Int
-    kvp (mn,n) = try (string mn) >> return n
-
-date :: Parser Date
-date = fromDmy <$> dayP <*> monthP <*> yearP <?> "date"
 \end{code}
 
 \subsection{Time}
 
 \begin{code}
-time :: Parser Time
-time = do
+time :: I.Date -> Parser I.Time
+time d = do
   h <- T.whitespace *> try (T.numeric <* T.symbol ":") <|> unexpected "time"
   m <- T.numeric <|> unexpected "time"
-  return $ makeTime h m
+  return $ I.makeTime d h m
 \end{code}
 
 \subsection{Interval}
 
+An \codeline{Interval} is a range of times on a specified \codeline{Date}.
+The Emacs Diary, so far as I know, does not support events spanning more than
+one day.
+
 \begin{code}
-interval :: Parser Interval
-interval = do
-  t1 <- try time <|> unexpected "start time"
-  t2 <- option t1 (T.symbol "-" *> time)
-  return $ Interval t1 t2
+interval :: I.Date -> Parser I.Interval
+interval d = do
+  t1 <- try (time d) <|> unexpected "start time"
+  t2 <- option t1 (T.symbol "-" *> (time d))
+  return $ I.Interval t1 t2
 \end{code}

@@ -83,7 +83,7 @@ assertParser message expected parser input =
 \caption{Test Types}
   \begin{tabular}{|rp{3.5in}|}
     \hline\hline
-    \codeline{recordTests :: Test} & \\
+    \codeline{tests :: Test} & \\
     \codeline{test :: Testable t => t -> Test} &
     Provides a way to convert data into a @Test@ or set of @Test@. \\
 

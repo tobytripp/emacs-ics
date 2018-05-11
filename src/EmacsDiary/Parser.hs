@@ -1,11 +1,9 @@
+-- -*- coding: utf-8 -*-
 module EmacsDiary.Parser (diary, record, entry) where
 
-import Data.Char (isSpace)
 import Text.Parsec
 import Text.Parsec.String (Parser)
 import Text.Parsec.Language (emptyDef)
-
-import Control.Monad (void, ap)
 
 import qualified EmacsDiary.Record as Rec
 import qualified EmacsDiary.Parser.Tokens as Tok
@@ -14,14 +12,21 @@ import qualified EmacsDiary.Parser.Interval as I
 diary :: Parser [Rec.Record]
 diary = manyTill record eof
 
+-- TODO: unwind/explain the (<$>) and (<*>) operators
+
 record :: Parser Rec.Record
-record = Rec.Record <$> day <*> (Tok.lexeme $ many entry) <?> "Record"
+record = do
+  r <- Rec.empty <$> day
+  let entryP = entry r
+  entries <- (Tok.lexeme $ many entryP) <?> "Record"
+  return $ foldr Rec.push r entries
 
 day :: Parser Rec.Day
 day = Rec.Singular <$> I.date <?> "Day"
 
-entry :: Parser Rec.Entry
-entry = Rec.Entry <$> I.interval <*> fields <?> "Record.Entry"
+entry :: Rec.Record -> Parser Rec.Entry
+entry (Rec.Record (Rec.Singular d) _) =
+  Rec.Entry <$> I.interval d <*> fields <?> "Record.Entry"
 
 
 fields :: Parser [Rec.EntryField]
