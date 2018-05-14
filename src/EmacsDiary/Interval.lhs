@@ -1,41 +1,51 @@
 %% -*- coding: utf-8 -*-
-\section{Date and Time Types}
+\section{Date, Time, and Interval Types}
+
+Note the use of \codeline{(..)} in module imports and exports to ensure that
+not only the type, but also its constructor is loaded.
 
 \begin{code}
+{-|
+Description: Calendar event intervals.
+-}
 module EmacsDiary.Interval (
-  Date(..)
-  , date
-  , epoch
-  , Time(..)
-  , makeTime
-  , instant
-  , Interval(..)
-  , mkInterval
+  -- * Types
+  Date(..),
+  Time(..),
+  Interval(..),
+
+  -- ** Exported Types
+  -- | Allows consumers of this Module to utilize the functions in
+  -- 'Data.Time.LocalTime' including the function 'getCurrentTimeZone', which
+  -- is an IO action (i.e., in the IO Monad).
+  module Data.Time.LocalTime,
+
+  -- * Convenience constructors
+  date,
+  timeOn,
+  instant,
+  interval,
+
+  -- * Convenience values
+  epoch
   ) where
 
-import Data.Fixed
-import Data.Time.Calendar (fromGregorian, showGregorian, Day)
+import Data.Time.Calendar (fromGregorian, Day)
+import Data.Time.LocalTime (
+  LocalTime(..),
+  TimeOfDay(..),
+  TimeZone,
+  localTimeToUTC,
+  getCurrentTimeZone,
+  utc)
 import Data.Time.Format (
   formatTime,
   defaultTimeLocale
   )
+import Data.Time.Clock (UTCTime(..))
 \end{code}
 
-Note the use of \codeline{(..)} to ensure that not only the type, but also its
-constructor is loaded.
-
-\begin{code}
-import Data.Time.Clock (
-  diffTimeToPicoseconds,
-  secondsToDiffTime,
-  addUTCTime,
-  DiffTime,
-  NominalDiffTime,
-  utctDayTime,
-  UTCTime(..))
-\end{code}
-
-\subsection{Date}
+\subsection{Public Interface}
 
 \blockquote[{\autocite[/NewType]{haskellwiki}}]{%
 A newtype declaration creates a new type in much the same way as data. The
@@ -47,18 +57,77 @@ newtype if the type has exactly one constructor with exactly one field inside
 it. }
 
 \begin{code}
-newtype Date = Date Day deriving (Eq)
 newtype Time = Time UTCTime deriving (Eq)
-epoch = Date $ fromGregorian 1970 1 1
-\end{code}
 
-\codeline{Interval} will represent a “range” of \codeline{Time}s.
+-- | The 'Date' and 'TimeZone' of a calendar event.
+-- All events on a given day are assumed to occur in the same time-zone.
+data Date = Date { day :: Day,
+                   tz  :: TimeZone
+                 } deriving (Eq)
 
-\begin{code}
+-- | A “range” of times for a calendar event.
 data Interval = Interval { start  :: Time,
                            finish :: Time
                          } deriving (Eq)
+
+-- | Construct a new 'Date' instance (UTC).
+-- That this `Date' is in UTC may cause future problems.  Keep an eye on this.
+date :: Int                      -- ^ day
+     -> Int                      -- ^ month
+     -> Integer                  -- ^ year
+     -> Date
+
+-- | Construct a 'Time’ instance on the given Date, in UTC.
+-- TODO: Consider using Hours/Minutes as explicit types here.
+timeOn :: Date
+       -> Int                    -- ^ hours
+       -> Int                    -- ^ minutes
+       -> Time                   -- ^ Time in UTC
+
+-- | Construct an 'Interval' that may have zero duration
+interval :: Time                 -- ^ start time
+         -> Maybe Time           -- ^ end time
+         -> Interval
+
+-- | Construct an 'Interval' from hours:minutes with no end-time
+instant :: Date
+        -> Int                   -- ^ hours
+        -> Int                   -- ^ minutes
+        -> Interval              -- ^ 'Interval' in UTC
+
+-- | The 'Date' of the UNIX Epoch
+epoch :: Date
+epoch = Date t0 utc
+  where
+    t0 = fromGregorian 1970 1 1
 \end{code}
+
+\subsection{Implementation}
+
+\subsubsection{Utility Constructors}
+\begin{code}
+date d m y = Date (fromGregorian y m d) utc
+
+timeOn (Date d tz) h m = Time utc
+  where
+    utc   = localTimeToUTC tz local
+    local = LocalTime d $ TimeOfDay h m 0
+\end{code}
+
+Constructors that can handle a missing end-time.
+
+\begin{code}
+interval a (Just b) = Interval a b
+interval a Nothing  = Interval a a
+
+instant d h m =
+  mkInterval time
+  where
+    mkInterval t = interval t Nothing
+    time = timeOn d h m
+\end{code}
+
+\subsubsection{Show Instances}
 
 The \codeline{Show} instance for \codeline{Interval} demonstrates Haskell
 “guards” in function definitions.
@@ -75,79 +144,7 @@ showTZ (Time t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
 
 \begin{code}
 instance Show Date where
-  show (Date d) = formatTime defaultTimeLocale "%Y%m%d" d
+  show (Date d _) = formatTime defaultTimeLocale "%Y%m%d" d
 instance Show Time where
   show (Time t)= formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
-
-date :: Int -> Int -> Integer -> Date
-date d m y = Date $  fromGregorian y m d
-\end{code}
-
-\begin{code}
-makeTime :: Date -> Integer -> Integer -> Time
-makeTime (Date d) h m =
-  Time . fromInt $ secs
-  where
-    secs      = h * 3600 + m * 60
-    fromInt i = UTCTime d (secondsToDiffTime . fromInteger $ i)
-
-
-timeFromList :: [Integer] -> Time
-timeFromList (h:xs) =
-  makeTime epoch h m
-  where
-    m = case take 1 xs of
-      [] -> 0
-      (m:_) -> m
-
-newtype Seconds = Seconds Integer deriving (Eq, Show)
-instance Num Seconds where
-  (Seconds a) + (Seconds b) = Seconds (a + b)
-  (Seconds a) - (Seconds b) = Seconds (a - b)
-  (Seconds a) * (Seconds b) = Seconds (a * b)
-  negate (Seconds i) = Seconds (negate i)
-  abs (Seconds i)    = Seconds (abs i)
-  signum (Seconds i) = Seconds (signum i)
-  fromInteger i      = Seconds (fromInteger i)
-
-newtype PicoSeconds = PicoSeconds Integer deriving (Eq, Show)
-instance Num PicoSeconds where
-  (PicoSeconds a) + (PicoSeconds b) = PicoSeconds (a + b)
-  (PicoSeconds a) - (PicoSeconds b) = PicoSeconds (a - b)
-  (PicoSeconds a) * (PicoSeconds b) = PicoSeconds (a * b)
-  negate (PicoSeconds i) = PicoSeconds (negate i)
-  abs    (PicoSeconds i) = PicoSeconds (abs i)
-  signum (PicoSeconds i) = PicoSeconds (signum i)
-  fromInteger i          = PicoSeconds (fromInteger i)
-
-fromPicoSeconds :: PicoSeconds -> Seconds
-fromPicoSeconds (PicoSeconds p) = Seconds $ p * 10^12
-
-picoSeconds :: Time -> PicoSeconds
-picoSeconds (Time t) = PicoSeconds . diffTimeToPicoseconds . utctDayTime $ t
-
-seconds :: Time -> Seconds
-seconds = fromPicoSeconds . picoSeconds
-
-timeToNDiff :: Time -> NominalDiffTime
-timeToNDiff (Time t)= fromInteger . diffTimeToPicoseconds . utctDayTime $ t
-
-addTime :: UTCTime -> Time -> UTCTime
-addTime a t = addUTCTime (timeToNDiff t) a
-\end{code}
-
-
-
-Constructors that can handle a missing end-time.
-
-\begin{code}
-mkInterval :: Time -> Maybe Time -> Interval
-mkInterval a (Just b) = Interval a b
-mkInterval a Nothing  = Interval a a
-
-mkTime :: Time -> Interval
-mkTime t = mkInterval t Nothing
-
-instant :: Date -> Integer -> Integer -> Interval
-instant d h m = mkTime $ makeTime d h m
 \end{code}

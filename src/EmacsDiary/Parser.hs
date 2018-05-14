@@ -3,7 +3,6 @@ module EmacsDiary.Parser (diary, record, entry) where
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
-import Text.Parsec.Language (emptyDef)
 
 import qualified EmacsDiary.Record as Rec
 import qualified EmacsDiary.Parser.Tokens as Tok

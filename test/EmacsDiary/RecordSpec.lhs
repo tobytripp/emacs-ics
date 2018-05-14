@@ -37,8 +37,8 @@ tests = test [
           ]
     let  d = I.date 7 7 2008
     let e1 = Entry (I.instant d 12 00) [Description "Happy Birthday, Son!"]
-    let e2 = Entry (I.mkInterval (I.makeTime d 13 00)
-                    (Just (I.makeTime d 14 00)))
+    let e2 = Entry (I.interval (I.timeOn d 13 00)
+                    (Just (I.timeOn d 14 00)))
               [Description "Eat Cake."]
     let input = Diary [
           push e1 $ push e2 (empty (Singular d))

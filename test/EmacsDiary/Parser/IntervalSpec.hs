@@ -16,19 +16,19 @@ tests = test [
       let (Right expected) = parseDateF "%d %b %Y" "04 May 2020"
       case testParse date "basic date" "4 May 2020" of
         (Left error)   -> assertFailure (show error)
-        (Right (I.Date actual)) -> assertEqual "" expected actual
+        (Right (I.Date actual _)) -> assertEqual "" expected actual
   ,
   "parse long month" ~: do
       let (Right expected) = parseDateF "%d %B %Y" "04 January 2020"
       case testParse date "long month" "04 January 2020" of
         (Left error)   -> assertFailure (show error)
-        (Right (I.Date actual)) -> assertEqual "" expected actual
+        (Right (I.Date actual _)) -> assertEqual "" expected actual
   ,
   "parsing T’s birthday" ~: do
       let (Right expected) = parseDateF "%d %B %Y" "07 July 2008"
       case testParse date "birthday" "7 July 2008" of
         (Left error)   -> assertFailure (show error)
-        (Right (I.Date actual)) -> assertEqual "" expected actual
+        (Right (I.Date actual _)) -> assertEqual "" expected actual
   ,
 
   "parsing time" ~: do

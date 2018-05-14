@@ -16,3 +16,5 @@ _region_.*
 *.prv
 *.xml
 *.fmt
+*.hi
+*.o
