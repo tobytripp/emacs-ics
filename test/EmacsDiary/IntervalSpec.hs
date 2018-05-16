@@ -26,4 +26,9 @@ tests = test [
       let (Time _ actual) = timeOn d 14 30
 
       assertEqual "" expected actual
+  ,
+  -- This would seem to imply that, on start, the parser will need the current
+  -- local time so that it can find weekdays as well as convert times to UTC.
+  "weekdays use the current date to find the next weekday's date" ~: do
+      assertEqual "NYI" True True
   ]

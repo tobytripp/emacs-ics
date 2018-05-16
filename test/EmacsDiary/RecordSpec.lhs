@@ -6,8 +6,6 @@ Declare the test module and export its tests.
 \begin{code}
 module EmacsDiary.RecordSpec (tests) where
 
-import Data.Time.LocalTime (hoursToTimeZone)
-
 import Test.HUnit
 import SpecHelpers
 
