@@ -3,30 +3,33 @@ module EmacsDiary.Parser (diary, record, entry) where
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
+import Data.Time.LocalTime (TimeZone)
 
 import qualified EmacsDiary.Record as Rec
 import qualified EmacsDiary.Parser.Tokens as Tok
 import qualified EmacsDiary.Parser.Interval as I
 
-diary :: Parser [Rec.Record]
-diary = manyTill record eof
+diary  :: TimeZone -> Parser [Rec.Record]
+record :: TimeZone -> Parser Rec.Record
+entry  :: Rec.Record -> Parser Rec.Entry
+
+
+diary tz = manyTill (record tz) eof
 
 -- TODO: unwind/explain the (<$>) and (<*>) operators
 
-record :: Parser Rec.Record
-record = do
-  r <- Rec.empty <$> day
+record tz = do
+  r <- Rec.empty <$> day tz
   let entryP = entry r
   entries <- (Tok.lexeme $ many entryP) <?> "Record"
   return $ foldr Rec.push r entries
 
-day :: Parser Rec.Day
-day = Rec.Singular <$> I.date <?> "Day"
-
-entry :: Rec.Record -> Parser Rec.Entry
 entry (Rec.Record (Rec.Singular d) _) =
   Rec.Entry <$> I.interval d <*> fields <?> "Record.Entry"
 
+
+day :: TimeZone -> Parser Rec.Day
+day tz = Rec.Singular <$> I.date tz <?> "Day"
 
 fields :: Parser [Rec.EntryField]
 fields = Tok.lexeme $ sepBy1 field sep

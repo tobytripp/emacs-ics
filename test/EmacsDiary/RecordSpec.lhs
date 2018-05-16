@@ -6,6 +6,8 @@ Declare the test module and export its tests.
 \begin{code}
 module EmacsDiary.RecordSpec (tests) where
 
+import Data.Time.LocalTime (hoursToTimeZone)
+
 import Test.HUnit
 import SpecHelpers
 
@@ -21,21 +23,21 @@ tests = test [
           "BEGIN:VCALENDAR"
           , "VERSION:2.0"
           , "BEGIN:VEVENT"
-          , "DTSTART:20080707T120000Z"
-          , "DTEND:20080707T120000Z"
+          , "DTSTART:20080707T170000Z"
+          , "DTEND:20080707T170000Z"
           , "SUMMARY:Happy Birthday, Son!"
           , "END:VEVENT"
           , ""
           , "BEGIN:VEVENT"
-          , "DTSTART:20080707T130000Z"
-          , "DTEND:20080707T140000Z"
+          , "DTSTART:20080707T180000Z"
+          , "DTEND:20080707T190000Z"
           , "SUMMARY:Eat Cake."
           , "END:VEVENT"
           , ""
           , ""
           , "END:VCALENDAR"
           ]
-    let  d = I.date 7 7 2008
+    let  d = I.date cdt 7 7 2008
     let e1 = Entry (I.instant d 12 00) [Description "Happy Birthday, Son!"]
     let e2 = Entry (I.interval (I.timeOn d 13 00)
                     (Just (I.timeOn d 14 00)))

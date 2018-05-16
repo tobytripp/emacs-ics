@@ -29,7 +29,7 @@ import Data.Time.Calendar (fromGregorian)
 \end{code}
 
 \begin{code}
-date     :: Parser I.Date
+date     :: I.TimeZone -> Parser I.Date
 time     :: I.Date -> Parser I.Time
 interval :: I.Date -> Parser I.Interval
 \end{code}
@@ -37,7 +37,7 @@ interval :: I.Date -> Parser I.Interval
 \subsection{Date}
 
 \begin{code}
-date = I.date <$> dayP <*> monthP <*> yearP <?> "date"
+date tz = I.date tz <$> dayP <*> monthP <*> yearP <?> "date"
 
 dayP :: Parser Int
 dayP  = fromIntegral <$> T.numeric

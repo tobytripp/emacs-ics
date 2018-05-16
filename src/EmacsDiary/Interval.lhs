@@ -43,6 +43,7 @@ import Data.Time.Format (
   defaultTimeLocale
   )
 import Data.Time.Clock (UTCTime(..))
+import Text.Printf (printf)
 \end{code}
 
 \subsection{Public Interface}
@@ -70,9 +71,9 @@ data Interval = Interval { start  :: Time,
                            finish :: Time
                          } deriving (Eq)
 
--- | Construct a new 'Date' instance (UTC).
--- That this `Date' is in UTC may cause future problems.  Keep an eye on this.
-date :: Int                      -- ^ day
+-- | Construct a new 'Date' instance.
+date :: TimeZone                 -- ^ time-zone
+     -> Int                      -- ^ day
      -> Int                      -- ^ month
      -> Integer                  -- ^ year
      -> Date
@@ -106,7 +107,7 @@ epoch = Date t0 utc
 
 \subsubsection{Utility Constructors}
 \begin{code}
-date d m y = Date (fromGregorian y m d) utc
+date tz d m y = Date (fromGregorian y m d) tz
 
 timeOn (Date d tz) h m = Time utc
   where
@@ -144,7 +145,9 @@ showTZ (Time t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
 
 \begin{code}
 instance Show Date where
-  show (Date d _) = formatTime defaultTimeLocale "%Y%m%d" d
+  show (Date d tz) = formatTime defaultTimeLocale format d
+    where
+      format = printf "%%Y%%m%%d (%s)" (show tz)
 instance Show Time where
   show (Time t)= formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
 \end{code}

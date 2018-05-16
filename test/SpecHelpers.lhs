@@ -9,12 +9,22 @@ import Text.Printf
 import Data.Time.Clock
 import Data.Time.Calendar
 import Data.Time.Format
+import Data.Time.LocalTime
 
 import Text.Parsec
 import Text.Parsec.String
+import Data.Time.LocalTime (utc)
+
+import qualified EmacsDiary.Interval as Interval
 \end{code}
 
 \subsection{Date Helpers}
+
+TimeZones
+
+\begin{code}
+cdt = hoursToTimeZone (-5)
+\end{code}
 
 Create a date-parser via partial application of @parseTime*@:
 
@@ -33,49 +43,30 @@ parseTimeF fmt s =
     Nothing  -> Left $ printf "Failed to parse `%s` with `%s`" s fmt
     (Just x) -> Right x
 
-showTime :: UTCTime -> String
-showTime = formatTime defaultTimeLocale "%e %b %Y %R"
+zonedDate :: Integer -> Int -> Int -> Interval.Date
+zonedDate y m d =
+  Interval.Date (fromGregorian y m d) tz
+  where
+    tz = hoursToTimeZone (-5)
 \end{code}
 
 \subsection{Parser Testing Helpers}
 
 \begin{code}
-nullState = ()
-testParse :: Parser a -> String -> String -> Either ParseError a
-testParse p src = runParser p nullState src
+assertParsesTo :: (Eq expected, Show expected)
+  => Parsec SourceName () expected -- ^ Parser under test
+  -> String                       -- ^ input
+  -> expected                     -- ^ expected parser output
+  -> IO ()
 
-
--- assertParsesTo expected p input = do
---   let result = testParse p input
---   case result of
---     (Right actual) -> expected @=? show actual
---     (Left  error)  -> assertFailure
---       (printf "Failed to parse input `%s': %s" input (show error))
+assertParsesTo p input expected =
+  case runParser p nullState input input of
+    (Left e) -> assertFailure $ show e
+    (Right actual) -> assertEqual "" expected actual
+  where
+    nullState = ()
 \end{code}
 
-A Type for expressing parser assertions
-\begin{code}
-data ParserContext a =
-  ParserContext { parser     :: Parser a
-                  , input    :: String
-                  , expected :: String
-                  }
-
-parses :: (Show a) => ParserContext a -> Assertion
-parses pa =
-  case testParse (parser pa) ("expected: " ++ (expected pa)) (input pa) of
-    (Right actual) -> assertEqual "" (expected pa) (show actual)
-    (Left error)   -> assertFailure (show error)
-
-instance (Show a) => Testable (ParserContext a)
-  where
-    test = TestCase . parses
-
-assertParser message expected parser input =
-  parses pa
-  where
-    pa = ParserContext parser input expected
-\end{code}
 
 \subsection{Writing the Tests}
 
