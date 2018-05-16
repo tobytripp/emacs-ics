@@ -10,6 +10,8 @@ module EmacsDiary.Record (
 
   EntryField(..),
 
+  WeekDay(..), -- ^ Days of the week
+  
   empty,
   entry,
   push
