@@ -12,7 +12,17 @@ module EmacsDiary.Parser.Interval (
   )where
 
 import qualified EmacsDiary.Parser.Tokens as T
-import qualified EmacsDiary.Interval as I
+import EmacsDiary.Interval (
+  Date(..),
+  WeekDay(..),
+  Time,
+  Interval(..),
+
+  TimeZone,
+
+  fromNumbers,
+  timeOn
+  )
 
 import Text.Parsec (
   (<|>),                        -- ^ 'choice' operator
@@ -29,15 +39,31 @@ import Data.Time.Calendar (fromGregorian)
 \end{code}
 
 \begin{code}
-date     :: I.TimeZone -> Parser I.Date
-time     :: I.Date -> Parser I.Time
-interval :: I.Date -> Parser I.Interval
+date     :: TimeZone -> Parser Date
+time     :: Date -> Parser Time
+interval :: Date -> Parser Interval
 \end{code}
 
 \subsection{Date}
 
 \begin{code}
-date tz = I.date tz <$> dayP <*> monthP <*> yearP <?> "date"
+date tz = day tz <|> weekday tz
+
+day tz = fromNumbers tz <$> dayP <*> monthP <*> yearP <?> "date"
+weekday tz = T.lexeme $ choice $
+  map kvp weekdays
+  where
+    kvp :: (String, WeekDay) -> Parser Date
+    kvp (wstring, wd) = try (string wstring) >> return (DayOfWeek wd tz)
+    weekdays = [
+        ("Sunday",    Sunday)
+      , ("Monday",    Monday)
+      , ("Tuesday",   Tuesday)
+      , ("Wednesday", Wednesday)
+      , ("Thursday",  Thursday)
+      , ("Friday",    Friday)
+      , ("Saturday",  Saturday)
+      ]
 
 dayP :: Parser Int
 dayP  = fromIntegral <$> T.numeric
@@ -75,7 +101,7 @@ months = [
 time d = do
   h <- T.whitespace *> try (T.numeric <* T.symbol ":") <|> unexpected "time"
   m <- T.numeric <|> unexpected "time"
-  return $ I.timeOn d (fromInteger h) (fromInteger m)
+  return $ timeOn d (fromInteger h) (fromInteger m)
 \end{code}
 
 \subsection{Interval}
@@ -88,5 +114,5 @@ one day.
 interval d = do
   t1 <- try (time d) <|> unexpected "start time"
   t2 <- option t1 (T.symbol "-" *> (time d))
-  return $ I.Interval t1 t2
+  return $ Interval t1 t2
 \end{code}

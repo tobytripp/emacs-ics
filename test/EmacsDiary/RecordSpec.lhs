@@ -37,13 +37,13 @@ tests = test [
           , ""
           , "END:VCALENDAR"
           ]
-    let  d = I.date cdt 7 7 2008
+    let  d = I.fromNumbers cdt 7 7 2008
     let e1 = Entry (I.instant d 12 00) [Description "Happy Birthday, Son!"]
     let e2 = Entry (I.interval (I.timeOn d 13 00)
                     (Just (I.timeOn d 14 00)))
               [Description "Eat Cake."]
     let input = Diary [
-          push e1 $ push e2 (empty (Singular d))
+          push e1 $ push e2 (empty d)
           ]
 
     assertEqual "" expected (ICS.toIcs input)

@@ -5,13 +5,9 @@ Description: Calendar records
 module EmacsDiary.Record (
   Diary(..),
   Record(..),
-  Day(..),
   Entry(..),
-
   EntryField(..),
 
-  WeekDay(..), -- ^ Days of the week
-  
   empty,
   entry,
   push
@@ -29,23 +25,9 @@ given calendar date.
 data Diary = Diary [Record]
 
 -- | A Collection of events for a particular Calendar date.
-data Record = Record { day :: Day
+data Record = Record { day :: I.Date
                      , entries :: Entries }
               deriving (Eq, Show)
-
--- | A Calendar Day may occur on a specific 'Date' or repeat Weekly.
-data Day = Singular  { date    :: I.Date }
-         | Repeating { weekDay :: WeekDay }
-  deriving (Eq, Show)
-
-data WeekDay = Sunday
-             | Monday
-             | Tuesday
-             | Wednesday
-             | Thursday
-             | Friday
-             | Saturday
-  deriving (Eq, Show)
 
 type Entries = [Entry]
 data Entry = Entry { eventTime   :: I.Interval,
@@ -57,14 +39,16 @@ data EntryField = Description String
                 deriving (Eq, Show)
 
 -- | Create an empty Calendar 'Record' on a given 'Date'.
-empty :: Day -> Record
+empty :: I.Date -> Record
 
 -- | Push a Calendar event onto the given 'Record'
 push :: Entry -> Record -> Record
 
 -- | Create a Calendar event in the given 'Interval' with given 'String's as
 -- fields.
-entry :: I.Interval -> [String] -> Entry
+entry :: I.Interval              -- ^ when
+      -> [String]                -- ^ what
+      -> Entry
 \end{code}
 
 \subsection{Implementation}

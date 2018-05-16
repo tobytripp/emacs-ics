@@ -11,6 +11,7 @@ Description: Calendar event intervals.
 module EmacsDiary.Interval (
   -- * Types
   Date(..),
+  WeekDay(..),
   Time(..),
   Interval(..),
 
@@ -21,7 +22,7 @@ module EmacsDiary.Interval (
   module Data.Time.LocalTime,
 
   -- * Convenience constructors
-  date,
+  fromNumbers,
   timeOn,
   instant,
   interval,
@@ -60,19 +61,29 @@ it. }
 \begin{code}
 newtype Time = Time UTCTime deriving (Eq)
 
--- | The 'Date' and 'TimeZone' of a calendar event.
+-- | The 'Date'(s) and 'TimeZone' of a calendar event.
 -- All events on a given day are assumed to occur in the same time-zone.
-data Date = Date { day :: Day,
-                   tz  :: TimeZone
-                 } deriving (Eq)
+data Date = Date { calendarDay :: Day, tz :: TimeZone }
+          | DayOfWeek { weekDay :: WeekDay, tz :: TimeZone }
+  deriving (Eq)
 
 -- | A “range” of times for a calendar event.
 data Interval = Interval { start  :: Time,
                            finish :: Time
                          } deriving (Eq)
 
+-- | Days of the week
+data WeekDay = Sunday
+             | Monday
+             | Tuesday
+             | Wednesday
+             | Thursday
+             | Friday
+             | Saturday
+  deriving (Eq, Show)
+
 -- | Construct a new 'Date' instance.
-date :: TimeZone                 -- ^ time-zone
+fromNumbers :: TimeZone                 -- ^ time-zone
      -> Int                      -- ^ day
      -> Int                      -- ^ month
      -> Integer                  -- ^ year
@@ -107,8 +118,13 @@ epoch = Date t0 utc
 
 \subsubsection{Utility Constructors}
 \begin{code}
-date tz d m y = Date (fromGregorian y m d) tz
+fromNumbers tz d m y = Date (fromGregorian y m d) tz
 
+timeOn (DayOfWeek _ tz) h m = Time utc
+  where
+    utc   = localTimeToUTC tz local
+    local = LocalTime epoch $ TimeOfDay h m 0
+    epoch = fromGregorian 1970 1 1
 timeOn (Date d tz) h m = Time utc
   where
     utc   = localTimeToUTC tz local
@@ -148,6 +164,7 @@ instance Show Date where
   show (Date d tz) = formatTime defaultTimeLocale format d
     where
       format = printf "%%Y%%m%%d (%s)" (show tz)
+  show (DayOfWeek wd tz) = printf "%s (%s)" (show wd) (show tz)
 instance Show Time where
   show (Time t)= formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
 \end{code}

@@ -13,7 +13,7 @@ import EmacsDiary.Interval
 
 tests = test [
   "in `timeOn` the given date is added to specified time" ~: do
-      let d = date cdt 7 7 2008
+      let d = fromNumbers cdt 7 7 2008
       let (Time actual) = timeOn d 14 30
       let (Just expected) =
             parseTimeM True defaultTimeLocale

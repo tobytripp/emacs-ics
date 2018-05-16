@@ -19,9 +19,8 @@ import EmacsDiary.Parser (diary, record, entry)
 epoch :: R.Record
 epoch = onDate 1 1 1970
 
-onDate d m y = R.empty . day $ cdtdate d m y
-day     = R.Singular
-cdtdate = I.date cdt
+onDate d m y = R.empty $ cdtdate d m y
+cdtdate = I.fromNumbers cdt
 \end{code}
 
 Parsers to test:
@@ -92,17 +91,17 @@ tests = test [
 
   "record parser" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      let d = I.date cdt 7 7 2008
+      let d = I.fromNumbers cdt 7 7 2008
       assertParsesTo recordParser input
         (R.push (R.entry (I.instant d 14 30) ["Work on parsers"])
-          (R.empty $ R.Singular d))
+          (R.empty d))
   ,
 
   "parse date and time with description" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      let d = I.date cdt 7 7 2008
+      let d = I.fromNumbers cdt 7 7 2008
       let e = R.entry (I.instant d 14 30) ["Work on parsers"]
-      assertParsesTo diaryParser input [R.push e (R.empty $ R.Singular d)]
+      assertParsesTo diaryParser input [R.push e (R.empty d)]
   ,
 
   "parse multi-line entry" ~: do
@@ -110,7 +109,7 @@ tests = test [
             "7 July 2008 14:30 Work on parsers",
             "    With gusto!",
             ""]
-      let d = I.date cdt 7 7 2008
+      let d = I.fromNumbers cdt 7 7 2008
       let e = R.entry (I.instant d 14 30) ["Work on parsers", "With gusto!"]
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
@@ -118,18 +117,26 @@ tests = test [
           [R.push e $ onDate 7 7 2008]
           actual
   ,
+\end{code}
 
-  -- "weekday entries" ~: do
-  --     let input = "Wednesday 08:00 Wake up"
-  --     let e = R.entry (I.instant (date 1 1 1970) 8 0) ["Wake up"]
-  --     assertParsesTo diaryParser input [R.push e (R.Record (R.Repeating R.Wednesday) [])]
-  --     ,
+In the Emacs Diary, weekly repeating events can be specified by using a
+week-day name instead of a specific date.
 
+\begin{code}
+  "weekday entries" ~: do
+      let input = "Wednesday 08:00 Wake up"
+      let e = R.entry (I.instant I.epoch 13 0) ["Wake up"]
+      assertParsesTo diaryParser input [
+        R.push e (R.Record (I.DayOfWeek I.Wednesday cdt) [])]
+      ,
+\end{code}
+
+\begin{code}
   "parse entry with time-interval" ~: do
       let input = unlines [
             "7 July 2008 13:00-16:00 Gorge on Cake"
             ]
-      let d  = I.date cdt 7 7 2008
+      let d  = I.fromNumbers cdt 7 7 2008
       let t1 = I.timeOn d 13 0
       let t2 = I.timeOn d 16 0
       let e1 = R.entry (I.interval t1 (Just t2)) ["Gorge on Cake"]
@@ -141,7 +148,7 @@ tests = test [
       let input = unlines [
             "7 July 2008 14:30 Work on parsers",
             "7 July 2008 15:15 Celebrate"]
-      let d = I.date cdt 7 7 2008
+      let d = I.fromNumbers cdt 7 7 2008
       let e1 = R.entry (I.instant d 14 30) ["Work on parsers"]
       let e2 = R.entry (I.instant d 15 15) ["Celebrate"]
       case runParser diaryParser () input input of

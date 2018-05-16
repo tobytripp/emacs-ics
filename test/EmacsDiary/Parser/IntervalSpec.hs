@@ -11,8 +11,8 @@ import EmacsDiary.Parser.Interval
 import SpecHelpers
 
 epoch   = I.epoch
-cdtdate = I.date cdt
-utcdate = I.date I.utc
+cdtdate = I.fromNumbers cdt
+utcdate = I.fromNumbers I.utc
 
 dateParser = date cdt
 
@@ -27,6 +27,11 @@ tests = test [
       let expected = cdtdate 4 1 2020
       assertParsesTo dateParser input expected
   ,
+  "parsing week-day" ~: do
+      let input = "Thursday 14:30 Coffee"
+      let expected = I.DayOfWeek I.Thursday cdt
+      assertParsesTo dateParser input expected
+      ,
   "parsing T’s birthday" ~: do
       let input = "7 July 2008"
       let expected = cdtdate 7 7 2008
