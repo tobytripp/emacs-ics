@@ -47,5 +47,24 @@ tests = test [
           ]
 
     assertEqual "" expected (ICS.toIcs input)
+  ,
+  "repeating events as ICS" ~: do
+    let expected = unlines [
+          "BEGIN:VCALENDAR"
+          , "VERSION:2.0"
+          , "BEGIN:VEVENT"
+          , "DTSTART:19700101T193000Z"
+          , "DTEND:19700101T193000Z"
+          , "RRULE:WEEKLY"
+          , "SUMMARY:Coffee"
+          , "END:VEVENT"
+          , ""
+          , ""
+          , "END:VCALENDAR"
+          ]
+    let d = I.DayOfWeek I.Wednesday cdt
+    let e = Entry (I.instant d 14 30) [Description "Coffee"]
+    let input = Diary [push e (empty d)]
+    assertEqual "" expected (ICS.toIcs input)
   ]
 \end{code}

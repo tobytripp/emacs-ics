@@ -49,23 +49,14 @@ import Text.Printf (printf)
 
 \subsection{Public Interface}
 
-\blockquote[{\autocite[/NewType]{haskellwiki}}]{%
-A newtype declaration creates a new type in much the same way as data. The
-syntax and usage of newtypes is virtually identical to that of data
-declarations - in fact, you can replace the newtype keyword with data and
-it'll still compile, indeed there's even a good chance your program will still
-work. The converse is not true, however - data can only be replaced with
-newtype if the type has exactly one constructor with exactly one field inside
-it. }
-
 \begin{code}
-newtype Time = Time UTCTime deriving (Eq)
-
 -- | The 'Date'(s) and 'TimeZone' of a calendar event.
 -- All events on a given day are assumed to occur in the same time-zone.
 data Date = Date { calendarDay :: Day, tz :: TimeZone }
           | DayOfWeek { weekDay :: WeekDay, tz :: TimeZone }
   deriving (Eq)
+
+data Time = Time { date :: Date, time :: UTCTime }
 
 -- | A “range” of times for a calendar event.
 data Interval = Interval { start  :: Time,
@@ -83,11 +74,11 @@ data WeekDay = Sunday
   deriving (Eq, Show)
 
 -- | Construct a new 'Date' instance.
-fromNumbers :: TimeZone                 -- ^ time-zone
-     -> Int                      -- ^ day
-     -> Int                      -- ^ month
-     -> Integer                  -- ^ year
-     -> Date
+fromNumbers :: TimeZone          -- ^ time-zone
+            -> Int               -- ^ day
+            -> Int               -- ^ month
+            -> Integer           -- ^ year
+            -> Date
 
 -- | Construct a 'Time’ instance on the given Date, in UTC.
 -- TODO: Consider using Hours/Minutes as explicit types here.
@@ -120,12 +111,12 @@ epoch = Date t0 utc
 \begin{code}
 fromNumbers tz d m y = Date (fromGregorian y m d) tz
 
-timeOn (DayOfWeek _ tz) h m = Time utc
+timeOn day@(DayOfWeek _ tz) h m = Time day utc
   where
     utc   = localTimeToUTC tz local
     local = LocalTime epoch $ TimeOfDay h m 0
     epoch = fromGregorian 1970 1 1
-timeOn (Date d tz) h m = Time utc
+timeOn day@(Date d tz) h m = Time day utc
   where
     utc   = localTimeToUTC tz local
     local = LocalTime d $ TimeOfDay h m 0
@@ -155,8 +146,8 @@ instance Show Interval where
     | a == b     = showTZ a
     | otherwise = (showT a) ++ "-" ++ (showTZ b)
 
-showT  (Time t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M" t
-showTZ (Time t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
+showT  (Time _ t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M" t
+showTZ (Time _ t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
 \end{code}
 
 \begin{code}
@@ -166,5 +157,8 @@ instance Show Date where
       format = printf "%%Y%%m%%d (%s)" (show tz)
   show (DayOfWeek wd tz) = printf "%s (%s)" (show wd) (show tz)
 instance Show Time where
-  show (Time t)= formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
+  show (Time d t) = formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
+
+instance Eq Time where
+  (Time _ t1) == (Time _ t2) = t1 == t2
 \end{code}
