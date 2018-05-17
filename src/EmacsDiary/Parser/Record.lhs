@@ -16,7 +16,7 @@ import Text.Parsec.String (Parser)
 
 import qualified EmacsDiary.Parser.Tokens as Tok
 import qualified EmacsDiary.Parser.Interval as Interval
-import EmacsDiary.Interval (TimeZone)
+import EmacsDiary.Interval (ZonedTime)
 import EmacsDiary.Record (
   Record(..),
   Entry(..),
@@ -29,15 +29,16 @@ import EmacsDiary.Record (
 \subsection {Parsers}
 
 \begin{code}
-record :: TimeZone -> Parser Record
+record :: ZonedTime              -- ^ Current local-time
+       -> Parser Record
 entry  :: Record -> Parser Entry
 \end{code}
 
 \begin{code}
 -- TODO: unwind/explain the (<$>) and (<*>) operators
 
-record tz = do
-  r <- empty <$> Interval.date tz
+record localt = do
+  r <- empty <$> Interval.date localt
   let entryP = entry r
   entries <- (Tok.lexeme $ many entryP) <?> "Record"
   return $ foldr push r entries

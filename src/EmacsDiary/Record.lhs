@@ -13,7 +13,10 @@ module EmacsDiary.Record (
   push
   ) where
 
-import qualified EmacsDiary.Interval as I
+import EmacsDiary.Interval (
+  Date,
+  Interval
+  )
 \end{code}
 
 A \codeline{Diary} specifies a collection of \codeline{Records}s; a
@@ -25,12 +28,12 @@ given calendar date.
 data Diary = Diary [Record]
 
 -- | A Collection of events for a particular Calendar date.
-data Record = Record { day :: I.Date
+data Record = Record { day :: Date
                      , entries :: Entries }
               deriving (Eq, Show)
 
 type Entries = [Entry]
-data Entry = Entry { eventTime   :: I.Interval,
+data Entry = Entry { eventTime   :: Interval,
                      fields      :: [EntryField]}
   deriving (Eq)
 
@@ -39,14 +42,14 @@ data EntryField = Description String
                 deriving (Eq, Show)
 
 -- | Create an empty Calendar 'Record' on a given 'Date'.
-empty :: I.Date -> Record
+empty :: Date -> Record
 
 -- | Push a Calendar event onto the given 'Record'
 push :: Entry -> Record -> Record
 
 -- | Create a Calendar event in the given 'Interval' with given 'String's as
 -- fields.
-entry :: I.Interval              -- ^ when
+entry :: Interval                -- ^ when
       -> [String]                -- ^ what
       -> Entry
 \end{code}

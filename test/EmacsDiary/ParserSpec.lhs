@@ -15,20 +15,32 @@ import qualified EmacsDiary.Interval as I
 import EmacsDiary.Parser (diary, record, entry)
 \end{code}
 
-\begin{code}
-epoch :: R.Record
-epoch = onDate 1 1 1970
+Create a “parsed-at” time-stamp value for use in testing parsers.
 
-onDate d m y = R.empty $ cdtdate d m y
-cdtdate = I.fromNumbers cdt
+\begin{code}
+import Data.Time.Calendar
+import Data.Time.LocalTime
+
+tstamp = ZonedTime local cdt
+  where
+    local = LocalTime d t
+    d = fromGregorian 2008 07 07
+    t = TimeOfDay 12 0 0
+\end{code}
+
+A sample @Record@
+
+\begin{code}
+epochRecord = makeRecord (1970, 1, 1)
+makeRecord  = R.empty . (I.makeDate tstamp)
 \end{code}
 
 Parsers to test:
 
 \begin{code}
-diaryParser  = diary cdt
-recordParser = record cdt
-entryParser  = entry epoch
+diaryParser  = diary  tstamp
+recordParser = record tstamp
+entryParser  = entry  epochRecord
 \end{code}
 
 \begin{code}
@@ -86,12 +98,12 @@ tests = test [
 
   "record parsing returns a Record" ~: do
       let input = "7 July 2008\n"
-      assertParsesTo diaryParser input [onDate 7 7 2008]
+      assertParsesTo diaryParser input [makeRecord (2008, 7, 7)]
   ,
 
   "record parser" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      let d = I.fromNumbers cdt 7 7 2008
+      let d = I.makeDate tstamp (2008, 7, 7)
       assertParsesTo recordParser input
         (R.push (R.entry (I.instant d 14 30) ["Work on parsers"])
           (R.empty d))
@@ -99,7 +111,7 @@ tests = test [
 
   "parse date and time with description" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      let d = I.fromNumbers cdt 7 7 2008
+      let d = I.makeDate tstamp (2008, 7, 7)
       let e = R.entry (I.instant d 14 30) ["Work on parsers"]
       assertParsesTo diaryParser input [R.push e (R.empty d)]
   ,
@@ -109,12 +121,12 @@ tests = test [
             "7 July 2008 14:30 Work on parsers",
             "    With gusto!",
             ""]
-      let d = I.fromNumbers cdt 7 7 2008
+      let d = I.makeDate tstamp (2008, 7, 7)
       let e = R.entry (I.instant d 14 30) ["Work on parsers", "With gusto!"]
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multi-line entry"
-          [R.push e $ onDate 7 7 2008]
+          [R.push e $ makeRecord (2008, 7, 7)]
           actual
   ,
 \end{code}
@@ -127,7 +139,7 @@ week-day name instead of a specific date.
       let input = "Wednesday 08:00 Wake up"
       let e = R.entry (I.instant I.epoch 13 0) ["Wake up"]
       assertParsesTo diaryParser input [
-        R.push e (R.Record (I.DayOfWeek I.Wednesday cdt) [])]
+        R.push e (R.Record (I.DayOfWeek I.Wednesday tstamp) [])]
       ,
 \end{code}
 
@@ -136,26 +148,26 @@ week-day name instead of a specific date.
       let input = unlines [
             "7 July 2008 13:00-16:00 Gorge on Cake"
             ]
-      let d  = I.fromNumbers cdt 7 7 2008
-      let t1 = I.timeOn d 13 0
-      let t2 = I.timeOn d 16 0
+      let d  = I.makeDate tstamp (2008, 7, 7)
+      let t1 = I.makeTime d 13 0
+      let t2 = I.makeTime d 16 0
       let e1 = R.entry (I.interval t1 (Just t2)) ["Gorge on Cake"]
       assertParsesTo diaryParser input
-        [R.push e1 (onDate 7 7 2008)]
+        [R.push e1 (makeRecord (2008, 7, 7))]
       ,
 
   "parse multiple records" ~: do
       let input = unlines [
             "7 July 2008 14:30 Work on parsers",
             "7 July 2008 15:15 Celebrate"]
-      let d = I.fromNumbers cdt 7 7 2008
+      let d = I.makeDate tstamp (2008, 7, 7)
       let e1 = R.entry (I.instant d 14 30) ["Work on parsers"]
       let e2 = R.entry (I.instant d 15 15) ["Celebrate"]
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multiple records"
-          [(R.push e1 $ onDate 7 7 2008),
-           (R.push e2 $ onDate 7 7 2008)]
+          [(R.push e1 $ makeRecord (2008, 7, 7)),
+           (R.push e2 $ makeRecord (2008, 7, 7))]
           actual
   ]
 \end{code}

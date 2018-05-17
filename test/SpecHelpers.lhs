@@ -26,30 +26,6 @@ TimeZones
 cdt = hoursToTimeZone (-5)
 \end{code}
 
-Create a date-parser via partial application of @parseTime*@:
-
-\begin{code}
-acceptOuterWhitespace = True
-
-parseDateF :: String -> String -> Either String Day
-parseDateF fmt s =
-  case parseTimeM acceptOuterWhitespace defaultTimeLocale fmt s :: Maybe UTCTime of
-    Nothing  -> Left $ printf "Failed to parse `%s` with `%s`" s fmt
-    (Just x) -> Right $ utctDay x
-
-parseTimeF :: String -> String -> Either String UTCTime
-parseTimeF fmt s =
-  case parseTimeM acceptOuterWhitespace defaultTimeLocale fmt s :: Maybe UTCTime of
-    Nothing  -> Left $ printf "Failed to parse `%s` with `%s`" s fmt
-    (Just x) -> Right x
-
-zonedDate :: Integer -> Int -> Int -> Interval.Date
-zonedDate y m d =
-  Interval.Date (fromGregorian y m d) tz
-  where
-    tz = hoursToTimeZone (-5)
-\end{code}
-
 \subsection{Parser Testing Helpers}
 
 \begin{code}

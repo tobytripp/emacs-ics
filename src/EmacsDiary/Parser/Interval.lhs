@@ -18,10 +18,8 @@ import EmacsDiary.Interval (
   Time,
   Interval(..),
 
-  TimeZone,
-
-  fromNumbers,
-  timeOn
+  makeDate,
+  makeTime
   )
 
 import Text.Parsec (
@@ -36,10 +34,15 @@ import Text.Parsec (
   )
 import Text.Parsec.String (Parser)
 import Data.Time.Calendar (fromGregorian)
+import Data.Time.LocalTime (
+  ZonedTime,
+  zonedTimeZone
+  )
 \end{code}
 
 \begin{code}
-date     :: TimeZone -> Parser Date
+date     :: ZonedTime            -- ^ current local time
+         -> Parser Date
 time     :: Date -> Parser Time
 interval :: Date -> Parser Interval
 \end{code}
@@ -47,14 +50,18 @@ interval :: Date -> Parser Interval
 \subsection{Date}
 
 \begin{code}
-date tz = day tz <|> weekday tz
+date localtime = day localtime <|> weekday localtime
 
-day tz = fromNumbers tz <$> dayP <*> monthP <*> yearP <?> "date"
-weekday tz = T.lexeme $ choice $
+day localt = do
+  d <- dayP
+  m <- monthP
+  y <- yearP <?> "date"
+  return $ makeDate localt (y, m, d)
+weekday localt = T.lexeme $ choice $
   map kvp weekdays
   where
     kvp :: (String, WeekDay) -> Parser Date
-    kvp (wstring, wd) = try (string wstring) >> return (DayOfWeek wd tz)
+    kvp (wstring, wd) = try (string wstring) >> return (DayOfWeek wd localt)
     weekdays = [
         ("Sunday",    Sunday)
       , ("Monday",    Monday)
@@ -78,7 +85,6 @@ monthP = T.lexeme $ choice $
     kvp :: (String, Int) -> Parser Int
     kvp (mn,n) = try (string mn) >> return n
 
--- | Map month-names to integer values
 months = [
   ("January",   1),  ("Jan",       1),
   ("February",  2),  ("Feb",       2),
@@ -101,7 +107,7 @@ months = [
 time d = do
   h <- T.whitespace *> try (T.numeric <* T.symbol ":") <|> unexpected "time"
   m <- T.numeric <|> unexpected "time"
-  return $ timeOn d (fromInteger h) (fromInteger m)
+  return $ makeTime d (fromInteger h) (fromInteger m)
 \end{code}
 
 \subsection{Interval}

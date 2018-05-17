@@ -9,12 +9,21 @@ module EmacsDiary.RecordSpec (tests) where
 import Test.HUnit
 import SpecHelpers
 
+import Data.Time.Calendar
+import Data.Time.LocalTime
+
 import EmacsDiary.Record
 import qualified EmacsDiary.Interval as I
 import qualified EmacsDiary.Ics as ICS
 \end{code}
 
 \begin{code}
+tstamp = ZonedTime local cdt
+  where
+    local = LocalTime d t
+    d = fromGregorian 2008 07 07
+    t = TimeOfDay 12 00 00
+
 tests = test [
   "emit a diary record as ics" ~: do
     let expected = unlines [
@@ -35,10 +44,10 @@ tests = test [
           , ""
           , "END:VCALENDAR"
           ]
-    let  d = I.fromNumbers cdt 7 7 2008
+    let  d = I.makeDate tstamp (2008, 7, 7)
     let e1 = Entry (I.instant d 12 00) [Description "Happy Birthday, Son!"]
-    let e2 = Entry (I.interval (I.timeOn d 13 00)
-                    (Just (I.timeOn d 14 00)))
+    let e2 = Entry (I.interval (I.makeTime d 13 00)
+                    (Just (I.makeTime d 14 00)))
               [Description "Eat Cake."]
     let input = Diary [
           push e1 $ push e2 (empty d)
@@ -60,7 +69,7 @@ tests = test [
           , ""
           , "END:VCALENDAR"
           ]
-    let d = I.DayOfWeek I.Wednesday cdt
+    let d = I.DayOfWeek I.Wednesday tstamp
     let e = Entry (I.instant d 14 30) [Description "Coffee"]
     let input = Diary [push e (empty d)]
     assertEqual "" expected (ICS.toIcs input)

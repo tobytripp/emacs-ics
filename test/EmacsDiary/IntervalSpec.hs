@@ -4,28 +4,43 @@ module EmacsDiary.IntervalSpec (tests) where
 import Test.HUnit
 import SpecHelpers
 
-import Data.Time.Format (parseTimeM, defaultTimeLocale)
+import Data.Time.Format (parseTimeM, formatTime, defaultTimeLocale)
 import Data.Time.Calendar (fromGregorian)
 import Data.Time.Clock (UTCTime(..))
 import Data.Time.LocalTime
 
 import EmacsDiary.Interval
 
+tstamp = ZonedTime local cdt
+  where
+    local = LocalTime d t
+    d = fromGregorian 2008 07 07
+    t = TimeOfDay 12 00 00
+
 tests = test [
-  "in `timeOn` the given date is added to specified time" ~: do
-      let d = fromNumbers cdt 7 7 2008
-      let (Time _ actual) = timeOn d 14 30
+  "in `makeTime` the given date is added to specified date" ~: do
+      let d = makeDate tstamp (2008, 7, 7)
+      let (Time _ actual) = makeTime d 14 30
       let (Just expected) =
             parseTimeM True defaultTimeLocale
               "%FT%R" "2008-07-07T19:30" :: Maybe UTCTime
       assertEqual "" expected actual
   ,
   "local time-zone is converted to UTC" ~: do
-      let d@(Date day _)  = zonedDate 7 7 2008
+      let d@(Date day _)  = makeDate tstamp (2008, 7, 7)
       let expected        = UTCTime day 70200
-      let (Time _ actual) = timeOn d 14 30
+      let (Time _ actual) = makeTime d 14 30
 
       assertEqual "" expected actual
+  ,
+  "local time formats as UTC" ~: do
+      let d@(Date day _)  = makeDate tstamp (2008, 7, 7)
+      let expected        = UTCTime day 70200
+      let (Time _ actual) = makeTime d 14 30
+
+      assertEqual ""
+        (formatTime defaultTimeLocale "%FT%R%Z" expected)
+        (formatTime defaultTimeLocale "%FT%R%Z" actual)
   ,
   -- This would seem to imply that, on start, the parser will need the current
   -- local time so that it can find weekdays as well as convert times to UTC.

@@ -22,8 +22,8 @@ module EmacsDiary.Interval (
   module Data.Time.LocalTime,
 
   -- * Convenience constructors
-  fromNumbers,
-  timeOn,
+  makeDate,
+  makeTime,
   instant,
   interval,
 
@@ -36,9 +36,12 @@ import Data.Time.LocalTime (
   LocalTime(..),
   TimeOfDay(..),
   TimeZone,
+  ZonedTime(..),
+
   localTimeToUTC,
   getCurrentTimeZone,
-  utc)
+  utc,
+  utcToZonedTime)
 import Data.Time.Format (
   formatTime,
   defaultTimeLocale
@@ -52,10 +55,8 @@ import Text.Printf (printf)
 \begin{code}
 -- | The 'Date'(s) and 'TimeZone' of a calendar event.
 -- All events on a given day are assumed to occur in the same time-zone.
-data Date = Date { calendarDay :: Day, tz :: TimeZone }
-          | DayOfWeek { weekDay :: WeekDay, tz :: TimeZone }
-  deriving (Eq)
-
+data Date = Date { calendarDay :: Day, parsedAt :: ZonedTime }
+          | DayOfWeek { weekDay :: WeekDay, parsedAt :: ZonedTime }
 data Time = Time { date :: Date, time :: UTCTime }
 
 -- | A “range” of times for a calendar event.
@@ -74,49 +75,58 @@ data WeekDay = Sunday
   deriving (Eq, Show)
 
 -- | Construct a new 'Date' instance.
-fromNumbers :: TimeZone          -- ^ time-zone
-            -> Int               -- ^ day
-            -> Int               -- ^ month
-            -> Integer           -- ^ year
-            -> Date
+makeDate :: ZonedTime            -- ^ time-zone
+         -> Gregorian            -- ^ (year, month, day)
+         -> Date
 
--- | Construct a 'Time’ instance on the given Date, in UTC.
--- TODO: Consider using Hours/Minutes as explicit types here.
-timeOn :: Date
-       -> Int                    -- ^ hours
-       -> Int                    -- ^ minutes
-       -> Time                   -- ^ Time in UTC
+-- | Construct a 'Time’ instance on the given (local) Date, converted to UTC.
+makeTime :: Date
+         -> Hour
+         -> Minute
+         -> Time                 -- ^ Time in UTC
 
 -- | Construct an 'Interval' that may have zero duration
 interval :: Time                 -- ^ start time
          -> Maybe Time           -- ^ end time
-         -> Interval
+         -> Interval             -- ^ 'Interval' in UTC
 
--- | Construct an 'Interval' from hours:minutes with no end-time
+-- | Construct an 'Interval' from hours:minutes with zero duration
 instant :: Date
-        -> Int                   -- ^ hours
-        -> Int                   -- ^ minutes
+        -> Hour
+        -> Minute
         -> Interval              -- ^ 'Interval' in UTC
 
 -- | The 'Date' of the UNIX Epoch
 epoch :: Date
-epoch = Date t0 utc
+epoch = Date d0 t0
   where
-    t0 = fromGregorian 1970 1 1
+    d0 = fromGregorian 1970 1 1
+    t0 = utcToZonedTime utc $ UTCTime d0 0
+
+type Gregorian  = (Year, Month, DayOfMonth)
+type Hour       = Int
+type Minute     = Int
+type DayOfMonth = Int
+type Month      = Int
+type Year       = Integer
 \end{code}
+
 
 \subsection{Implementation}
 
 \subsubsection{Utility Constructors}
 \begin{code}
-fromNumbers tz d m y = Date (fromGregorian y m d) tz
+makeDate localt (y, m, d) = Date localDay localt
+  where
+    localDay = (fromGregorian y m d)
+    tz       = zonedTimeZone localt
 
-timeOn day@(DayOfWeek _ tz) h m = Time day utc
+makeTime day@(DayOfWeek _ (ZonedTime _ tz)) h m = Time day utc
   where
     utc   = localTimeToUTC tz local
     local = LocalTime epoch $ TimeOfDay h m 0
     epoch = fromGregorian 1970 1 1
-timeOn day@(Date d tz) h m = Time day utc
+makeTime day@(Date d (ZonedTime _ tz)) h m = Time day utc
   where
     utc   = localTimeToUTC tz local
     local = LocalTime d $ TimeOfDay h m 0
@@ -132,7 +142,7 @@ instant d h m =
   mkInterval time
   where
     mkInterval t = interval t Nothing
-    time = timeOn d h m
+    time = makeTime d h m
 \end{code}
 
 \subsubsection{Show Instances}
@@ -161,4 +171,7 @@ instance Show Time where
 
 instance Eq Time where
   (Time _ t1) == (Time _ t2) = t1 == t2
+instance Eq Date where
+  (Date d1 _) == (Date d2 _) = d1 == d2
+  (DayOfWeek d1 _) == (DayOfWeek d2 _) = d1 == d2
 \end{code}
