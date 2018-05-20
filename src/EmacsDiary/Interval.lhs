@@ -22,16 +22,18 @@ module EmacsDiary.Interval (
   module Data.Time.LocalTime,
 
   -- * Convenience constructors
-  makeDate,
+  utcDate,
   makeTime,
+  dateOfWeekDay,
   instant,
   interval,
+  gregorian,
 
   -- * Convenience values
   epoch
   ) where
 
-import Data.Time.Calendar (fromGregorian, Day)
+import Data.Time.Calendar (addDays, fromGregorian, Day)
 import Data.Time.LocalTime (
   LocalTime(..),
   TimeOfDay(..),
@@ -47,7 +49,9 @@ import Data.Time.Format (
   defaultTimeLocale
   )
 import Data.Time.Clock (UTCTime(..))
+import Data.Time.Calendar.OrdinalDate (sundayStartWeek)
 import Text.Printf (printf)
+import Data.List (elemIndex)
 \end{code}
 
 \subsection{Public Interface}
@@ -74,16 +78,25 @@ data WeekDay = Sunday
              | Saturday
   deriving (Eq, Show)
 
--- | Construct a new 'Date' instance.
-makeDate :: ZonedTime            -- ^ time-zone
-         -> Gregorian            -- ^ (year, month, day)
-         -> Date
+-- | Fort constructing new 'Date' instances.
+class MakeDate a where
+  utcDate :: ZonedTime -> a -> Date
+
+gregorian :: (Integral a, Integral b) =>
+              a                 -- ^ Year
+            -> b                 -- ^ Month
+            -> b                 -- ^ Day
+            -> Gregorian
 
 -- | Construct a 'Time’ instance on the given (local) Date, converted to UTC.
 makeTime :: Date
          -> Hour
          -> Minute
          -> Time                 -- ^ Time in UTC
+
+dateOfWeekDay :: WeekDay
+              -> ZonedTime       -- ^ “current” time
+              -> Date            -- ^ the next Day occurring on the given weekday
 
 -- | Construct an 'Interval' that may have zero duration
 interval :: Time                 -- ^ start time
@@ -103,7 +116,7 @@ epoch = Date d0 t0
     d0 = fromGregorian 1970 1 1
     t0 = utcToZonedTime utc $ UTCTime d0 0
 
-type Gregorian  = (Year, Month, DayOfMonth)
+data Gregorian  = Gregorian {gy :: Year, gm :: Month, gd :: DayOfMonth}
 type Hour       = Int
 type Minute     = Int
 type DayOfMonth = Int
@@ -116,21 +129,32 @@ type Year       = Integer
 
 \subsubsection{Utility Constructors}
 \begin{code}
-makeDate localt (y, m, d) = Date localDay localt
-  where
-    localDay = (fromGregorian y m d)
-    tz       = zonedTimeZone localt
+-- | 'MakeDate' instance for the 'Gregorian' type.
+instance MakeDate Gregorian where
+  utcDate localt (Gregorian y m d) = Date localDay localt
+    where
+      localDay = (fromGregorian y m d)
+      tz       = zonedTimeZone localt
+instance MakeDate Day where
+  utcDate localt day = Date day localt
 
-makeTime day@(DayOfWeek _ (ZonedTime _ tz)) h m = Time day utc
+gregorian y m d = Gregorian year month day
+  where
+    year = toInteger y
+    month = fromInteger $ toInteger m
+    day = fromInteger $ toInteger d
+
+makeTime day@(DayOfWeek wd ctime@(ZonedTime _ tz)) h m = Time day utc
   where
     utc   = localTimeToUTC tz local
-    local = LocalTime epoch $ TimeOfDay h m 0
-    epoch = fromGregorian 1970 1 1
+    local = LocalTime d $ TimeOfDay h m 0
+    (Date d _) = dateOfWeekDay wd ctime
 makeTime day@(Date d (ZonedTime _ tz)) h m = Time day utc
   where
     utc   = localTimeToUTC tz local
     local = LocalTime d $ TimeOfDay h m 0
 \end{code}
+
 
 Constructors that can handle a missing end-time.
 
@@ -144,6 +168,30 @@ instant d h m =
     mkInterval t = interval t Nothing
     time = makeTime d h m
 \end{code}
+
+\subsubsection{WeekDays}
+
+Determining the @Date@ of a given @WeekDay@.
+
+\begin{code}
+dateOfWeekDay wd current@(ZonedTime (LocalTime d t) tz) =
+  utcDate current nextWeekDay
+  where
+    nextWeekDay         = addDays (toInteger diffDays) d
+    (_, currentWeekDay) = sundayStartWeek d
+    diffDays            = wdIndex - currentWeekDay
+    (Just wdIndex)      = elemIndex wd weekdays
+    weekdays = [
+      Sunday,
+      Monday,
+      Tuesday,
+      Wednesday,
+      Thursday,
+      Friday,
+      Saturday
+      ]
+\end{code}
+
 
 \subsubsection{Show Instances}
 

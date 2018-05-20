@@ -31,8 +31,8 @@ tstamp = ZonedTime local cdt
 A sample @Record@
 
 \begin{code}
-epochRecord = makeRecord (1970, 1, 1)
-makeRecord  = R.empty . (I.makeDate tstamp)
+epochRecord = makeRecord (I.gregorian 1970 1 1)
+makeRecord  = R.empty . (I.utcDate tstamp)
 \end{code}
 
 Parsers to test:
@@ -98,12 +98,12 @@ tests = test [
 
   "record parsing returns a Record" ~: do
       let input = "7 July 2008\n"
-      assertParsesTo diaryParser input [makeRecord (2008, 7, 7)]
+      assertParsesTo diaryParser input [makeRecord (I.gregorian 2008 7 7)]
   ,
 
   "record parser" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      let d = I.makeDate tstamp (2008, 7, 7)
+      let d = I.utcDate tstamp (I.gregorian 2008 7 7)
       assertParsesTo recordParser input
         (R.push (R.entry (I.instant d 14 30) ["Work on parsers"])
           (R.empty d))
@@ -111,7 +111,7 @@ tests = test [
 
   "parse date and time with description" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
-      let d = I.makeDate tstamp (2008, 7, 7)
+      let d = I.utcDate tstamp (I.gregorian 2008 7 7)
       let e = R.entry (I.instant d 14 30) ["Work on parsers"]
       assertParsesTo diaryParser input [R.push e (R.empty d)]
   ,
@@ -121,12 +121,12 @@ tests = test [
             "7 July 2008 14:30 Work on parsers",
             "    With gusto!",
             ""]
-      let d = I.makeDate tstamp (2008, 7, 7)
+      let d = I.utcDate tstamp (I.gregorian 2008 7 7)
       let e = R.entry (I.instant d 14 30) ["Work on parsers", "With gusto!"]
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multi-line entry"
-          [R.push e $ makeRecord (2008, 7, 7)]
+          [R.push e $ makeRecord (I.gregorian 2008 7 7)]
           actual
   ,
 \end{code}
@@ -137,7 +137,7 @@ week-day name instead of a specific date.
 \begin{code}
   "weekday entries" ~: do
       let input = "Wednesday 08:00 Wake up"
-      let e = R.entry (I.instant I.epoch 13 0) ["Wake up"]
+      let e = R.entry (I.instant (I.utcDate tstamp (I.gregorian 2008 07 09)) 8 0) ["Wake up"]
       assertParsesTo diaryParser input [
         R.push e (R.Record (I.DayOfWeek I.Wednesday tstamp) [])]
       ,
@@ -148,26 +148,26 @@ week-day name instead of a specific date.
       let input = unlines [
             "7 July 2008 13:00-16:00 Gorge on Cake"
             ]
-      let d  = I.makeDate tstamp (2008, 7, 7)
+      let d  = I.utcDate tstamp (I.gregorian 2008 7 7)
       let t1 = I.makeTime d 13 0
       let t2 = I.makeTime d 16 0
       let e1 = R.entry (I.interval t1 (Just t2)) ["Gorge on Cake"]
       assertParsesTo diaryParser input
-        [R.push e1 (makeRecord (2008, 7, 7))]
+        [R.push e1 (makeRecord (I.gregorian 2008 7 7))]
       ,
 
   "parse multiple records" ~: do
       let input = unlines [
             "7 July 2008 14:30 Work on parsers",
             "7 July 2008 15:15 Celebrate"]
-      let d = I.makeDate tstamp (2008, 7, 7)
+      let d = I.utcDate tstamp (I.gregorian 2008 7 7)
       let e1 = R.entry (I.instant d 14 30) ["Work on parsers"]
       let e2 = R.entry (I.instant d 15 15) ["Celebrate"]
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multiple records"
-          [(R.push e1 $ makeRecord (2008, 7, 7)),
-           (R.push e2 $ makeRecord (2008, 7, 7))]
+          [(R.push e1 $ makeRecord (I.gregorian 2008 7 7)),
+           (R.push e2 $ makeRecord (I.gregorian 2008 7 7))]
           actual
   ]
 \end{code}

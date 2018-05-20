@@ -19,7 +19,7 @@ tstamp = ZonedTime local cdt
     local = LocalTime d t
     d     = fromGregorian 2008 07 07
     t     = TimeOfDay 12 00 00
-cdtdate y m d = I.makeDate tstamp (y, m, d)
+cdtdate y m d = I.utcDate tstamp (I.gregorian y m d)
 
 dateParser = date tstamp
 

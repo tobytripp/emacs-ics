@@ -44,7 +44,7 @@ tests = test [
           , ""
           , "END:VCALENDAR"
           ]
-    let  d = I.makeDate tstamp (2008, 7, 7)
+    let  d = I.utcDate tstamp (I.gregorian 2008 7 7)
     let e1 = Entry (I.instant d 12 00) [Description "Happy Birthday, Son!"]
     let e2 = Entry (I.interval (I.makeTime d 13 00)
                     (Just (I.makeTime d 14 00)))
@@ -60,8 +60,8 @@ tests = test [
           "BEGIN:VCALENDAR"
           , "VERSION:2.0"
           , "BEGIN:VEVENT"
-          , "DTSTART:19700101T193000Z"
-          , "DTEND:19700101T193000Z"
+          , "DTSTART:20080709T193000Z"
+          , "DTEND:20080709T193000Z"
           , "RRULE:WEEKLY"
           , "SUMMARY:Coffee"
           , "END:VEVENT"

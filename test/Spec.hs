@@ -7,15 +7,15 @@ import Text.Parsec.String (Parser)
 import System.Exit (exitSuccess, exitFailure)
 
 import qualified EmacsDiary.Parser.IntervalSpec as Interval
-import qualified EmacsDiary.ParserSpec as PSpec
-import qualified EmacsDiary.Parser.TokenSpec as Tokens
-import qualified EmacsDiary.RecordSpec as Records
-import qualified EmacsDiary.IntervalSpec as IntervalTypes
+import qualified EmacsDiary.ParserSpec          as Parser
+import qualified EmacsDiary.Parser.TokenSpec    as Tokens
+import qualified EmacsDiary.RecordSpec          as Records
+import qualified EmacsDiary.IntervalSpec        as IntervalTypes
 
 allTests = TestList [
   Interval.tests,
   Tokens.tests,
-  PSpec.tests,
+  Parser.tests,
   Records.tests,
   IntervalTypes.tests
   ]

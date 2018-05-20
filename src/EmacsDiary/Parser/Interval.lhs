@@ -18,8 +18,9 @@ import EmacsDiary.Interval (
   Time,
   Interval(..),
 
-  makeDate,
-  makeTime
+  utcDate,
+  makeTime,
+  gregorian
   )
 
 import Text.Parsec (
@@ -56,7 +57,7 @@ day localt = do
   d <- dayP
   m <- monthP
   y <- yearP <?> "date"
-  return $ makeDate localt (y, m, d)
+  return $ utcDate localt (gregorian y m d)
 weekday localt = T.lexeme $ choice $
   map kvp weekdays
   where
