@@ -44,12 +44,15 @@ Each \codeline{Entry} is a @VEVENT@.
 \begin{code}
 instance Ics Entry where
   toIcs (Entry t fs) = "BEGIN:VEVENT\n"
+    ++ icsUid t
     ++ toIcs t
     ++ edata fs
     ++ "END:VEVENT\n"
     where
       edata (s:es) = (summary s) ++ (unlines $ map show es)
       summary (Description s) = "SUMMARY:" ++ s ++ "\n"
+      icsUid (Interval (Time _ t1) _) =
+        printf "UID:ED%s\n" (formatTime defaultTimeLocale "%Y%m%d%H%M%S" t1)
 \end{code}
 
 \codeline{Interval} emits a start and end.

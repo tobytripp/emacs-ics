@@ -30,6 +30,7 @@ tests = test [
           "BEGIN:VCALENDAR"
           , "VERSION:2.0"
           , "BEGIN:VEVENT"
+          , "UID:ED20080707170000"
           , "CREATED:2008-07-07T170000Z"
           , "DTSTART:2008-07-07T170000Z"
           , "DTEND:2008-07-07T170000Z"
@@ -37,6 +38,7 @@ tests = test [
           , "END:VEVENT"
           , ""
           , "BEGIN:VEVENT"
+          , "UID:ED20080707180000"
           , "CREATED:2008-07-07T170000Z"
           , "DTSTART:2008-07-07T180000Z"
           , "DTEND:2008-07-07T190000Z"
@@ -57,11 +59,13 @@ tests = test [
 
     assertEqual "" expected (ICS.toIcs input)
   ,
+
   "repeating events as ICS" ~: do
     let expected = unlines [
           "BEGIN:VCALENDAR"
           , "VERSION:2.0"
           , "BEGIN:VEVENT"
+          , "UID:ED20080709193000"
           , "CREATED:2008-07-07T170000Z"
           , "DTSTART:2008-07-09T193000Z"
           , "DTEND:2008-07-09T193000Z"
