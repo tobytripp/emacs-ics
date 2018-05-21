@@ -20,6 +20,7 @@ module EmacsDiary.Interval (
   -- 'Data.Time.LocalTime' including the function 'getCurrentTimeZone', which
   -- is an IO action (i.e., in the IO Monad).
   module Data.Time.LocalTime,
+  module Data.Time.Format,
 
   -- * Convenience constructors
   utcDate,
@@ -30,11 +31,14 @@ module EmacsDiary.Interval (
   gregorian,
 
   -- * Convenience values
-  epoch
+  epoch,
+
+  -- * Conversions
+  iso8601
   ) where
 
 import Data.Time.Calendar (addDays, fromGregorian, Day)
-import Data.Time.LocalTime (
+import Data.Time.LocalTime (zonedTimeToUTC,
   LocalTime(..),
   TimeOfDay(..),
   TimeZone,
@@ -44,7 +48,7 @@ import Data.Time.LocalTime (
   getCurrentTimeZone,
   utc,
   utcToZonedTime)
-import Data.Time.Format (
+import Data.Time.Format (iso8601DateFormat,
   formatTime,
   defaultTimeLocale
   )
@@ -59,13 +63,13 @@ import Data.List (elemIndex)
 \begin{code}
 -- | The 'Date'(s) and 'TimeZone' of a calendar event.
 -- All events on a given day are assumed to occur in the same time-zone.
-data Date = Date { calendarDay :: Day, parsedAt :: ZonedTime }
+data Date = Date      { calendarDay :: Day, parsedAt :: ZonedTime }
           | DayOfWeek { weekDay :: WeekDay, parsedAt :: ZonedTime }
 data Time = Time { date :: Date, time :: UTCTime }
 
 -- | A “range” of times for a calendar event.
-data Interval = Interval { start  :: Time,
-                           finish :: Time
+data Interval = Interval { start     :: Time,
+                           finish    :: Time
                          } deriving (Eq)
 
 -- | Days of the week
@@ -81,6 +85,8 @@ data WeekDay = Sunday
 -- | Fort constructing new 'Date' instances.
 class MakeDate a where
   utcDate :: ZonedTime -> a -> Date
+class Iso8601 a where
+  iso8601 :: a -> String
 
 gregorian :: (Integral a, Integral b) =>
               a                 -- ^ Year
@@ -140,9 +146,9 @@ instance MakeDate Day where
 
 gregorian y m d = Gregorian year month day
   where
-    year = toInteger y
+    year  = toInteger y
     month = fromInteger $ toInteger m
-    day = fromInteger $ toInteger d
+    day   = fromInteger $ toInteger d
 
 makeTime day@(DayOfWeek wd ctime@(ZonedTime _ tz)) h m = Time day utc
   where
@@ -159,13 +165,12 @@ makeTime day@(Date d (ZonedTime _ tz)) h m = Time day utc
 Constructors that can handle a missing end-time.
 
 \begin{code}
-interval a (Just b) = Interval a b
-interval a Nothing  = Interval a a
+interval t1 (Just t2) = Interval t1 t2
+interval t1 Nothing   = Interval t1 t1
 
 instant d h m =
-  mkInterval time
+  interval time Nothing
   where
-    mkInterval t = interval t Nothing
     time = makeTime d h m
 \end{code}
 
@@ -212,10 +217,23 @@ showTZ (Time _ t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
 instance Show Date where
   show (Date d tz) = formatTime defaultTimeLocale format d
     where
-      format = printf "%%Y%%m%%d (%s)" (show tz)
+      format = iso8601DateFormat (Just "%H%M%SZ")
   show (DayOfWeek wd tz) = printf "%s (%s)" (show wd) (show tz)
+instance Iso8601 Date where
+  iso8601 d = show d
+
 instance Show Time where
-  show (Time d t) = formatTime defaultTimeLocale "%Y%m%dT%H%M%SZ" t
+  show (Time d t) = formatTime defaultTimeLocale format t
+    where
+      format = iso8601DateFormat (Just "%H%M%SZ")
+instance Iso8601 Time where
+  iso8601 t = show t
+
+instance Iso8601 ZonedTime where
+  iso8601 zt@(ZonedTime t tz) = formatTime defaultTimeLocale format utc
+    where
+      format = iso8601DateFormat (Just "%H%M%SZ")
+      utc = zonedTimeToUTC zt
 
 instance Eq Time where
   (Time _ t1) == (Time _ t2) = t1 == t2

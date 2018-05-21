@@ -15,6 +15,7 @@ module EmacsDiary.Record (
 
 import EmacsDiary.Interval (
   Date,
+  Time,
   Interval
   )
 \end{code}
@@ -28,8 +29,8 @@ given calendar date.
 data Diary = Diary [Record]
 
 -- | A Collection of events for a particular Calendar date.
-data Record = Record { day :: Date
-                     , entries :: Entries }
+data Record = Record { day       :: Date
+                     , entries   :: Entries }
               deriving (Eq, Show)
 
 type Entries = [Entry]

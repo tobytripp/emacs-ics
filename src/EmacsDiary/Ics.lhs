@@ -56,14 +56,16 @@ instance Ics Entry where
 
 \begin{code}
 instance Ics Interval where
-  toIcs (Interval start end) =
-    case start of
-      (Time (Date _ tz) t) ->
-        printf "DTSTART:%s\nDTEND:%s\n"
-          (show start)
-          (show end)
-      (Time (DayOfWeek wd _) t) ->
-        printf "DTSTART:%s\nDTEND:%s\nRRULE:WEEKLY\n"
-          (show start)
-          (show end)
+  toIcs (Interval start@(Time (Date _ createdAt) t) end) =
+    printf "CREATED:%s\n" (iso8601 createdAt)
+    ++
+    printf "DTSTART:%s\nDTEND:%s\n"
+    (iso8601 start)
+    (iso8601 end)
+  toIcs (Interval start@(Time (DayOfWeek _ createdAt) t) end) =
+    printf "CREATED:%s\n" (iso8601 createdAt)
+    ++
+    printf "DTSTART:%s\nDTEND:%s\nRRULE:WEEKLY\n"
+    (iso8601 start)
+    (iso8601 end)
 \end{code}
