@@ -83,5 +83,20 @@ tests = test [
     let e = Entry (I.instant d 14 30) [Description "Coffee"]
     let input = Diary [push e (empty d)]
     assertEqual "" expected (ICS.toIcs input)
+  ,
+\end{code}
+
+\begin{code}
+  "multiple descriptions will not load" ~: do
+    assertEqual "pending" 1 1
+  ,
+\end{code}
+
+\begin{code}
+  "render location attribute with vcal location field" ~: do
+    assertEqual "pending" 1 1
+\end{code}
+
+\begin{code}
   ]
 \end{code}
