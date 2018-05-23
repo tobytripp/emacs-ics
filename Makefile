@@ -8,8 +8,12 @@ TEX2PDF := /Library/TeX/texbin/pdflatex
 DOCDIR  := ./doc
 SRC     := $(wildcard */*.hs)
 DOCSRC  := $(wildcard */*.lhs)
+SOURCES := $(SRC) $(DOCSRC)
 
-all: test doc
+all: build doc
+
+build: test
+	stack build
 
 test: $(SOURCES)
 	stack test

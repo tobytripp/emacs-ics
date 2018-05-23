@@ -34,7 +34,7 @@ module EmacsDiary.Interval (
   epoch,
 
   -- * Conversions
-  iso8601
+  vCal
   ) where
 
 import Data.Time.Calendar (addDays, fromGregorian, Day)
@@ -48,7 +48,7 @@ import Data.Time.LocalTime (zonedTimeToUTC,
   getCurrentTimeZone,
   utc,
   utcToZonedTime)
-import Data.Time.Format (iso8601DateFormat,
+import Data.Time.Format (
   formatTime,
   defaultTimeLocale
   )
@@ -85,8 +85,8 @@ data WeekDay = Sunday
 -- | Fort constructing new 'Date' instances.
 class MakeDate a where
   utcDate :: ZonedTime -> a -> Date
-class Iso8601 a where
-  iso8601 :: a -> String
+class VCal a where
+  vCal :: a -> String
 
 gregorian :: (Integral a, Integral b) =>
               a                 -- ^ Year
@@ -214,25 +214,28 @@ showTZ (Time _ t) = formatTime defaultTimeLocale "%Y%m%dT%H:%M %Z" t
 \end{code}
 
 \begin{code}
+vCalDateFormat = "%Y%m%dT%H%M%SZ"
+
 instance Show Date where
   show (Date d tz) = formatTime defaultTimeLocale format d
     where
-      format = iso8601DateFormat (Just "%H%M%SZ")
+      format = vCalDateFormat
   show (DayOfWeek wd tz) = printf "%s (%s)" (show wd) (show tz)
-instance Iso8601 Date where
-  iso8601 d = show d
+instance VCal Date where
+  vCal d = show d
 
 instance Show Time where
   show (Time d t) = formatTime defaultTimeLocale format t
     where
-      format = iso8601DateFormat (Just "%H%M%SZ")
-instance Iso8601 Time where
-  iso8601 t = show t
+      format = vCalDateFormat
 
-instance Iso8601 ZonedTime where
-  iso8601 zt@(ZonedTime t tz) = formatTime defaultTimeLocale format utc
+instance VCal Time where
+  vCal t = show t
+
+instance VCal ZonedTime where
+  vCal zt@(ZonedTime t tz) = formatTime defaultTimeLocale format utc
     where
-      format = iso8601DateFormat (Just "%H%M%SZ")
+      format = vCalDateFormat
       utc = zonedTimeToUTC zt
 
 instance Eq Time where

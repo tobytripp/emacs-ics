@@ -98,7 +98,7 @@ tests = test [
 
   "record parsing returns a Record" ~: do
       let input = "7 July 2008\n"
-      assertParsesTo diaryParser input [makeRecord (I.gregorian 2008 7 7)]
+      assertParsesTo diaryParser input (R.Diary [makeRecord (I.gregorian 2008 7 7)])
   ,
 
   "record parser" ~: do
@@ -113,7 +113,7 @@ tests = test [
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
       let d = I.utcDate tstamp (I.gregorian 2008 7 7)
       let e = R.entry (I.instant d 14 30) ["Work on parsers"]
-      assertParsesTo diaryParser input [R.push e (R.empty d)]
+      assertParsesTo diaryParser input (R.Diary [R.push e (R.empty d)])
   ,
 
   "parse multi-line entry" ~: do
@@ -126,7 +126,7 @@ tests = test [
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multi-line entry"
-          [R.push e $ makeRecord (I.gregorian 2008 7 7)]
+          (R.Diary [R.push e $ makeRecord (I.gregorian 2008 7 7)])
           actual
   ,
 \end{code}
@@ -138,8 +138,8 @@ week-day name instead of a specific date.
   "weekday entries" ~: do
       let input = "Wednesday 08:00 Wake up"
       let e = R.entry (I.instant (I.utcDate tstamp (I.gregorian 2008 07 09)) 8 0) ["Wake up"]
-      assertParsesTo diaryParser input [
-        R.push e (R.Record (I.DayOfWeek I.Wednesday tstamp) [])]
+      assertParsesTo diaryParser input (R.Diary [
+        R.push e (R.Record (I.DayOfWeek I.Wednesday tstamp) [])])
       ,
 \end{code}
 
@@ -153,7 +153,7 @@ week-day name instead of a specific date.
       let t2 = I.makeTime d 16 0
       let e1 = R.entry (I.interval t1 (Just t2)) ["Gorge on Cake"]
       assertParsesTo diaryParser input
-        [R.push e1 (makeRecord (I.gregorian 2008 7 7))]
+        (R.Diary [R.push e1 (makeRecord (I.gregorian 2008 7 7))])
       ,
 
   "parse multiple records" ~: do
@@ -166,8 +166,8 @@ week-day name instead of a specific date.
       case runParser diaryParser () input input of
         (Left e)       -> assertFailure $ show e
         (Right actual) -> assertEqual "Multiple records"
-          [(R.push e1 $ makeRecord (I.gregorian 2008 7 7)),
-           (R.push e2 $ makeRecord (I.gregorian 2008 7 7))]
+          (R.Diary [(R.push e1 $ makeRecord (I.gregorian 2008 7 7)),
+           (R.push e2 $ makeRecord (I.gregorian 2008 7 7))])
           actual
   ]
 \end{code}

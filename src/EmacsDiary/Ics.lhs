@@ -60,15 +60,15 @@ instance Ics Entry where
 \begin{code}
 instance Ics Interval where
   toIcs (Interval start@(Time (Date _ createdAt) t) end) =
-    printf "CREATED:%s\n" (iso8601 createdAt)
+    printf "CREATED:%s\n" (vCal createdAt)
     ++
     printf "DTSTART:%s\nDTEND:%s\n"
-    (iso8601 start)
-    (iso8601 end)
+    (vCal start)
+    (vCal end)
   toIcs (Interval start@(Time (DayOfWeek _ createdAt) t) end) =
-    printf "CREATED:%s\n" (iso8601 createdAt)
+    printf "CREATED:%s\n" (vCal createdAt)
     ++
     printf "DTSTART:%s\nDTEND:%s\nRRULE:WEEKLY\n"
-    (iso8601 start)
-    (iso8601 end)
+    (vCal start)
+    (vCal end)
 \end{code}

@@ -27,11 +27,13 @@ given calendar date.
 \begin{code}
 -- | A Collection of Calendar dates.
 data Diary = Diary [Record]
+           | Failed { error :: String }
+  deriving (Eq)
 
 -- | A Collection of events for a particular Calendar date.
 data Record = Record { day       :: Date
                      , entries   :: Entries }
-              deriving (Eq, Show)
+  deriving (Eq, Show)
 
 type Entries = [Entry]
 data Entry = Entry { eventTime   :: Interval,
@@ -66,6 +68,10 @@ An \codeline{Entry} is the pairing of an event \emph{date} with a time,
 description, and location.
 
 \begin{code}
+instance Show Diary where
+  show (Diary rs) = show rs
+  show (Failed e) = e
+
 instance Show Entry where
   show (Entry t fs) = (show t) ++ " " ++ (unwords $ map show fs)
 
