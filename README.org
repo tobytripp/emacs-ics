@@ -1,77 +1,20 @@
 * emacs-diary-convert
 
-** TODO Remaining work [0/3]
+** TODO Remaining work [1/3]
    - [ ] Organize and clean up the output pdf
+     - [ ] Include all (or all that make sense) of the source files
    - [ ] Break-up the =Interval= module
-   - [ ] Convert all =*.hs= files to =*.lhs= so the resulting
+   - [X] Convert all =*.hs= files to =*.lhs= so the resulting
      document is complete.
 
-** Installing the Haskell ``stack''
+** Building the Project
+
    #+BEGIN_SRC sh
-     brew install haskell-stack
+   make build
    #+END_SRC
 
-   From the [[https://docs.haskellstack.org/en/stable/GUIDE/][haskellstack]] [2018-03-05] guide:
+** Type-setting the “Untangled” Document
 
-   - =stack build=
-     Next, we'll run the most important stack command: stack build.
-     #+BEGIN_SRC sh
-       ~$ cd helloworld
-       ~/helloworld$ stack build
-       # installing ... building ...
-     #+END_SRC
-     stack needs a GHC in order to build your project. stack will discover
-     that you are missing it and will install it for you. You can do this
-     manually by using the stack setup command.
-
-     You'll get intermediate download percentage statistics while the download
-     is occurring. This command may take some time, depending on download
-     speeds.
-
-     *NOTE*: GHC will be installed to your global stack root directory, so
-     calling =ghc= on the command line won't work. See the =stack exec=,
-     =stack ghc=, and =stack runghc= commands below for more information.
-
-     Once a GHC is installed, stack will then build your project.
-
-   - =stack exec=
-     Looking closely at the output of the previous command, you can see that
-     it built both a library called "helloworld" and an executable called
-     "helloworld-exe". We'll explain more in the next section, but, for now,
-     just notice that the executables are installed in our project's
-     =./.stack-work= directory.
-
-     Now, Let's use =stack exec= to run our executable (which just outputs the
-     string "someFunc"):
-
-     #+BEGIN_SRC sh
-       ~/helloworld$ stack exec helloworld-exe
-       someFunc
-     #+END_SRC
-
-     =stack exec= works by providing the same reproducible environment that
-     was used to build your project to the command that you are running. Thus,
-     it knew where to find =helloworld-exe= even though it is hidden in the
-     =./.stack-work= directory.
-
-   - stack test
-
-     Finally, like all good software, helloworld actually has a test suite.
-
-     Let's run it with stack test:
-
-     #+BEGIN_SRC sh
-       ~/helloworld$ stack test
-       # build output ...
-     #+END_SRC
-
-     Reading the output, you'll see that stack first builds the test suite and
-     then automatically runs it for us. For both the =build= and =test=
-     command, already built components are not built again. You can see this
-     by running =stack build= and =stack test= a second time:
-
-     #+BEGIN_SRC sh
-       ~/helloworld$ stack build
-       ~/helloworld$ stack test
-       # build output ...
-     #+END_SRC
+   #+BEGIN_SRC sh
+   make
+   #+END_SRC
