@@ -50,7 +50,10 @@ tests = test [
       assertParsesTo entryParser input
         (R.entry (I.instant I.epoch 19 30) ["entry"])
   ,
+\end{code}
 
+
+\begin{code}
   "parse multi-element entry" ~: do
       let input = unlines [
             "  14:30 field1",
@@ -61,6 +64,10 @@ tests = test [
         (R.entry (I.instant I.epoch 19 30) ["field1", "field2", "field3"])
   ,
 
+\end{code}
+
+
+\begin{code}
   "requires leading whitespace for entry" ~: do
       let input = unlines [
             "  14:30 field1; field2",
@@ -70,6 +77,10 @@ tests = test [
         (R.entry (I.instant I.epoch 19 30) ["field1", "field2"])
   ,
 
+\end{code}
+
+
+\begin{code}
   "entry with combinator" ~: do
       let input = unlines [
             "  14:30 field1",
@@ -79,6 +90,10 @@ tests = test [
          (R.entry (I.instant I.epoch 20 30) ["field2"])]
   ,
 
+\end{code}
+
+
+\begin{code}
   "parse semicolon separator" ~: do
       let input = unlines [
             "  14:30 field1; field2",
@@ -88,6 +103,10 @@ tests = test [
         (R.entry (I.instant I.epoch 19 30) ["field1", "field2", "field3"])
   ,
 
+\end{code}
+
+
+\begin{code}
   "parse date and time with empty description produces error" ~: do
       let input = "7 July 2008 14:30\n"
       case runParser diaryParser () input input of
@@ -96,11 +115,19 @@ tests = test [
           (printf "parsing should have failed, but got '%s'" (show r))
   ,
 
+\end{code}
+
+
+\begin{code}
   "record parsing returns a Record" ~: do
       let input = "7 July 2008\n"
       assertParsesTo diaryParser input (R.Diary [makeRecord (I.gregorian 2008 7 7)])
   ,
 
+\end{code}
+
+
+\begin{code}
   "record parser" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
       let d = I.utcDate tstamp (I.gregorian 2008 7 7)
@@ -109,6 +136,10 @@ tests = test [
           (R.empty d))
   ,
 
+\end{code}
+
+
+\begin{code}
   "parse date and time with description" ~: do
       let input = unlines ["7 July 2008 14:30 Work on parsers"]
       let d = I.utcDate tstamp (I.gregorian 2008 7 7)
@@ -116,6 +147,10 @@ tests = test [
       assertParsesTo diaryParser input (R.Diary [R.push e (R.empty d)])
   ,
 
+\end{code}
+
+
+\begin{code}
   "parse multi-line entry" ~: do
       let input = unlines [
             "7 July 2008 14:30 Work on parsers",
@@ -155,7 +190,10 @@ week-day name instead of a specific date.
       assertParsesTo diaryParser input
         (R.Diary [R.push e1 (makeRecord (I.gregorian 2008 7 7))])
       ,
+\end{code}
 
+
+\begin{code}
   "parse multiple records" ~: do
       let input = unlines [
             "7 July 2008 14:30 Work on parsers",

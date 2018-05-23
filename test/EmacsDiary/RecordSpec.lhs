@@ -23,7 +23,10 @@ tstamp = ZonedTime local cdt
     local = LocalTime d t
     d = fromGregorian 2008 07 07
     t = TimeOfDay 12 00 00
+\end{code}
 
+
+\begin{code}
 tests = test [
   "emit a diary record as ics" ~: do
     let expected = unlines [
@@ -59,7 +62,10 @@ tests = test [
 
     assertEqual "" expected (ICS.toIcs input)
   ,
+\end{code}
 
+  
+\begin{code}
   "repeating events as ICS" ~: do
     let expected = unlines [
           "BEGIN:VCALENDAR"
