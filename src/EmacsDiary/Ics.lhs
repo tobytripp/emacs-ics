@@ -24,10 +24,13 @@ An Emacs \codeline{Diary} is a @VCALENDAR@ containing the @VEVENT@s of its
 \begin{code}
 instance Ics Diary where
   toIcs (Diary []) = ""
-  toIcs (Diary rs) = "BEGIN:VCALENDAR\n"
-    ++ "VERSION:2.0\n"
-    ++ (unlines $ map toIcs rs)
-    ++ "END:VCALENDAR\n"
+  toIcs (Diary rs)
+    = unlines $
+      [ "BEGIN:VCALENDAR"
+      , "VERSION:2.0"
+      , (concat $ map toIcs rs)
+      , "END:VCALENDAR"]
+  toIcs (Failed e) = "!!! Invalid(?) Diary: " ++ e
 \end{code}
 
 A Diary \codeline{Record} is simply the collection of its \codeline{Event}
@@ -47,7 +50,7 @@ instance Ics Entry where
     ++ icsUid t
     ++ toIcs t
     ++ edata fs
-    ++ "END:VEVENT\n"
+    ++ "END:VEVENT"
     where
       edata (s:es) = (summary s) ++ (unlines $ map show es)
       summary (Description s) = "SUMMARY:" ++ s ++ "\n"
@@ -68,7 +71,7 @@ instance Ics Interval where
   toIcs (Interval start@(Time (DayOfWeek _ createdAt) t) end) =
     printf "CREATED:%s\n" (vCal createdAt)
     ++
-    printf "DTSTART:%s\nDTEND:%s\nRRULE:WEEKLY\n"
+    printf "DTSTART:%s\nDTEND:%s\nRRULE:FREQ=WEEKLY\n"
     (vCal start)
     (vCal end)
 \end{code}

@@ -39,7 +39,6 @@ tests = test [
           , "DTEND:20080707T170000Z"
           , "SUMMARY:Happy Birthday, Son!"
           , "END:VEVENT"
-          , ""
           , "BEGIN:VEVENT"
           , "UID:ED20080707180000"
           , "CREATED:20080707T170000Z"
@@ -47,7 +46,6 @@ tests = test [
           , "DTEND:20080707T190000Z"
           , "SUMMARY:Eat Cake."
           , "END:VEVENT"
-          , ""
           , ""
           , "END:VCALENDAR"
           ]
@@ -64,7 +62,7 @@ tests = test [
   ,
 \end{code}
 
-  
+
 \begin{code}
   "repeating events as ICS" ~: do
     let expected = unlines [
@@ -75,10 +73,9 @@ tests = test [
           , "CREATED:20080707T170000Z"
           , "DTSTART:20080709T193000Z"
           , "DTEND:20080709T193000Z"
-          , "RRULE:WEEKLY"
+          , "RRULE:FREQ=WEEKLY"
           , "SUMMARY:Coffee"
           , "END:VEVENT"
-          , ""
           , ""
           , "END:VCALENDAR"
           ]

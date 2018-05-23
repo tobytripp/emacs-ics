@@ -18,5 +18,4 @@ _region_.*
 *.fmt
 *.hi
 *.o
-/tmp/diary.diary
-/tmp/emacs.ics
+/tmp/*

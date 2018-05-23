@@ -1,4 +1,4 @@
-* emacs-diary-convert
+* emacs-ics
 
 ** TODO Remaining work [1/3]
    - [ ] Organize and clean up the output pdf

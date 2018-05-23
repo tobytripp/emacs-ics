@@ -1,6 +1,6 @@
-name:                emacs-diary-convert
+name:                emacs-ics
 version:             0.1.0.0
-github:              "tobytripp/emacs-diary-convert"
+github:              "tobytripp/emacs-ics"
 license:             BSD3
 author:              "Toby Tripp"
 maintainer:          "toby@tripp.net"
@@ -16,7 +16,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on Github at <https://github.com/tobytripp/emacs-diary-convert#readme>
+description:         Please see the README on Github at <https://github.com/tobytripp/emacs-ics#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -27,7 +27,7 @@ library:
   source-dirs: src
 
 executables:
-  emacs-diary-convert-exe:
+  emacs-ics-exe:
     main:                Main.lhs
     source-dirs:         app
     ghc-options:
@@ -35,10 +35,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - emacs-diary-convert
+    - emacs-ics
 
 tests:
-  emacs-diary-convert-test:
+  emacs-ics-test:
     main:                Spec.lhs
     source-dirs:         test
     ghc-options:
@@ -46,5 +46,5 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - emacs-diary-convert
+    - emacs-ics
     - HUnit
