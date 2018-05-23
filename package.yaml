@@ -28,7 +28,7 @@ library:
 
 executables:
   emacs-diary-convert-exe:
-    main:                Main.hs
+    main:                Main.lhs
     source-dirs:         app
     ghc-options:
     - -threaded
@@ -39,7 +39,7 @@ executables:
 
 tests:
   emacs-diary-convert-test:
-    main:                Spec.hs
+    main:                Spec.lhs
     source-dirs:         test
     ghc-options:
     - -threaded
