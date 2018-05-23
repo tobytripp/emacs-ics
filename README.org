@@ -1,5 +1,12 @@
-* TODO emacs-diary-convert
-** ``stack''
+* emacs-diary-convert
+
+** TODO Remaining work [0/3]
+   - [ ] Organize and clean up the output pdf
+   - [ ] Break-up the =Interval= module
+   - [ ] Convert all =*.hs= files to =*.lhs= so the resulting
+     document is complete.
+
+** Installing the Haskell ``stack''
    #+BEGIN_SRC sh
      brew install haskell-stack
    #+END_SRC
