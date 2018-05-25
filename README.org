@@ -1,24 +1,38 @@
 * emacs-ics
+** Usage
 
-** TODO Remaining work [1/3]
-   - [ ] Organize and clean up the output pdf
-     - [ ] Include all (or all that make sense) of the source files
-   - [ ] Break-up the =Interval= module
-   - [X] Convert all =*.hs= files to =*.lhs= so the resulting
-     document is complete.
+   * From check-out:
 
-** Building the Project
+     #+BEGIN_SRC sh
+       make import
+     #+END_SRC
 
-   #+BEGIN_SRC sh
-   make build
-   #+END_SRC
+   * From [[https://github.com/tobytripp/emacs-ics/releases/tag/v1.0][download]]:
 
-** Type-setting the “Untangled” Document
-
-   #+BEGIN_SRC sh
-   make
-   #+END_SRC
+     #+BEGIN_SRC sh
+       ./emacs-ics calendar.txt > calendar.ics
+     #+END_SRC
 
 ** Download
 
-  [[https://github.com/tobytripp/emacs-ics/releases/tag/v1.0][Latest Release]]
+   [[https://github.com/tobytripp/emacs-ics/releases/tag/v1.0][Latest Release]]
+
+** Development
+*** Building the Project
+
+    #+BEGIN_SRC sh
+    make build
+    #+END_SRC
+
+*** Type-setting the “Untangled” Document
+
+    #+BEGIN_SRC sh
+    make
+    #+END_SRC
+
+*** TODO Remaining work [1/3]
+    - [ ] Organize and clean up the output pdf
+      - [ ] Include all (or all that make sense) of the source files
+    - [ ] Break-up the =Interval= module
+    - [X] Convert all =*.hs= files to =*.lhs= so the resulting
+      document is complete.
