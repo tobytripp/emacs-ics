@@ -4,13 +4,14 @@
    * From check-out:
 
      #+BEGIN_SRC sh
-       make import
+       DIARY_PATH=calendar.txt make import
      #+END_SRC
 
    * From [[https://github.com/tobytripp/emacs-ics/releases/tag/v1.0][download]]:
 
      #+BEGIN_SRC sh
        ./emacs-ics calendar.txt > calendar.ics
+       open calendar.ics
      #+END_SRC
 
 ** Download
