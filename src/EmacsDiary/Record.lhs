@@ -7,11 +7,17 @@ module EmacsDiary.Record (
   Record(..),
   Entry(..),
   EntryField(..),
+  MetaData(..),
 
   empty,
   entry,
-  push
+  push,
+
+  metadata,
+  descriptions
   ) where
+
+import Data.List (mapAccumL)
 
 import EmacsDiary.Interval (
   Date,
@@ -41,9 +47,17 @@ data Entry = Entry { eventTime   :: Interval,
   deriving (Eq)
 
 data EntryField = Description String
-                | Location String
+                | Summary     String
+                | Location    String
                 deriving (Eq, Show)
 
+data MetaData = MetaData { summary     :: EntryField
+                         , description :: [EntryField]
+                         , location    :: [EntryField]}
+  deriving (Eq, Show)
+\end{code}
+
+\begin{code}
 -- | Create an empty Calendar 'Record' on a given 'Date'.
 empty :: Date -> Record
 
@@ -55,6 +69,15 @@ push :: Entry -> Record -> Record
 entry :: Interval                -- ^ when
       -> [String]                -- ^ what
       -> Entry
+\end{code}
+
+\begin{code}
+-- | Return the 'Event' meta-data.
+metadata :: Entry -> MetaData
+
+-- | Return the 'Event' fields partitioned by description.
+descriptions :: Entry
+             -> ([String], [EntryField])            -- ^ semi-colon separated description
 \end{code}
 
 \subsection{Implementation}
@@ -73,7 +96,28 @@ instance Show Diary where
   show (Failed e) = e
 
 instance Show Entry where
-  show (Entry t fs) = (show t) ++ " " ++ (unwords $ map show fs)
+  show e@(Entry t fs) = (show t)
+                      ++ " "
+                      ++ show fs
 
 entry t ds = Entry t $ map Description ds
+\end{code}
+
+\begin{code}
+metadata (Entry _ fs) =
+  (toMeta . mapAccumL segregate []) fs
+  where
+    segregate acc d@(Description _) = (acc ++ [d], [])
+    segregate acc f = (acc, [f])
+
+    toMeta ([], [])  = MetaData (Description "") [] []
+    toMeta (d:[], f) = MetaData d [] (concat f)
+    toMeta (d:ds, f) = MetaData d ds (concat f)
+
+descriptions (Entry _ fs) =
+  aggr . mapAccumL g [] $ fs
+  where
+    g acc (Description s) = (acc ++ [s], [])
+    g acc x               = (acc, [x])
+    aggr (acc, fs)        = (acc, concat fs)
 \end{code}

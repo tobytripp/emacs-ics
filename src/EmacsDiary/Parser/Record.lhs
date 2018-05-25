@@ -49,18 +49,17 @@ entry (Record d _) =
 fieldsP :: Parser [EntryField]
 fieldsP = Tok.lexeme $ sepBy1 field sep
   where
-    field = (description <|> location) <?> "entry field"
-    sep = try (endOfLine *> Tok.indent 4)
-      <|> (Tok.symbol ";")
-      <?> "field-separator"
+    field = location <|> description <?> "entry field"
+    sep   = try (endOfLine *> Tok.indent 4) <?> "field-separator"
 
 -- | An entry field representing part of the entry’s description
 description = Description <$>
   (Tok.line <?> "description")
 
 -- | An entry field representing the entry’s location
-location = Location <$>
-  (Tok.keyword "Location:" *>
-   Tok.line <?> "location")
+location = Location
+  <$> (Tok.keyword "Location:"
+  *>  Tok.line
+  <?> "location")
 
 \end{code}

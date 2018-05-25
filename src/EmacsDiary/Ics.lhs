@@ -2,6 +2,7 @@
 module EmacsDiary.Ics where
 
 import Text.Printf (printf)
+import Data.List (null, intersperse, intercalate)
 
 import EmacsDiary.Record
 import EmacsDiary.Interval
@@ -46,16 +47,40 @@ Each \codeline{Entry} is a @VEVENT@.
 
 \begin{code}
 instance Ics Entry where
-  toIcs (Entry t fs) = "BEGIN:VEVENT\n"
-    ++ icsUid t
+  toIcs e@(Entry t fs) = "BEGIN:VEVENT\n"
+    ++ uid t
     ++ toIcs t
-    ++ edata fs
+    ++ (toIcs . metadata) e
     ++ "END:VEVENT"
     where
-      edata (s:es) = (summary s) ++ (unlines $ map show es)
-      summary (Description s) = "SUMMARY:" ++ s ++ "\n"
-      icsUid (Interval (Time _ t1) _) =
+      uid (Interval (Time _ t1) _) =
         printf "UID:ED%s\n" (formatTime defaultTimeLocale "%Y%m%d%H%M%S" t1)
+\end{code}
+
+\begin{code}
+instance Ics MetaData where
+  toIcs (MetaData (Description summary) descriptions locations) =
+    (unlines . filter notEmpty) [
+    printf "SUMMARY:%s" summary
+    , description descriptions
+    , location locations
+    ]
+    where
+      notEmpty :: String -> Bool
+      notEmpty s = length s > 0
+
+      description :: [EntryField] -> String
+      description [] = ""
+      description ds = printf "DESCRIPTION:%s"
+        (intercalate ";" [s | d <- ds, let (Description s) = d])
+
+      location :: [EntryField] -> String
+      location [] = ""
+      location ls = printf "LOCATION:%s" $
+        (intercalate ";" . map (\(Location s) -> replace ',' "\\," s)) ls
+
+      replace :: Eq a => a -> [a] -> [a] -> [a]
+      replace a b = concatMap (\c -> if c == a then b else [c])
 \end{code}
 
 \codeline{Interval} emits a start and end.

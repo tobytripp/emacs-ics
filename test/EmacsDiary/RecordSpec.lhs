@@ -28,6 +28,29 @@ tstamp = ZonedTime local cdt
 
 \begin{code}
 tests = test [
+\end{code}
+
+\begin{code}
+  "extract meta-data from an entry" ~: do
+      let d = I.utcDate tstamp (I.gregorian 2008 7 7)
+      let e = Entry (I.instant d 14 30) [
+            Description "Coffee-Thirty"
+            , Location "ThoughtWorks, 200 E Randolph, Chicago, IL"
+            , Description "Sacrosanct Event"]
+
+      let expected
+            = MetaData
+                (Description "Coffee-Thirty")
+                [Description "Sacrosanct Event"]
+                [Location "ThoughtWorks, 200 E Randolph, Chicago, IL"]
+
+      let actual = metadata e
+
+      assertEqual "" expected actual
+  ,
+\end{code}
+
+\begin{code}
   "emit a diary record as ics" ~: do
     let expected = unlines [
           "BEGIN:VCALENDAR"
@@ -86,15 +109,63 @@ tests = test [
   ,
 \end{code}
 
+
+At least for MacOS’s Calendar application, having multiple description fields
+causes the import to silently stop.  That is, further entries are not imported
+cand no error is displayed.
+
 \begin{code}
   "multiple descriptions will not load" ~: do
-    assertEqual "pending" 1 1
+    let d = I.utcDate tstamp (I.gregorian 2008 7 7)
+    let e = Entry (I.instant d 14 30) [
+          Description "Coffee"
+          , Description "Coffee-Thirty"
+          , Description "Sacrosanct Event"]
+    let input = Diary [push e (empty d)]
+
+    let expected = unlines [
+          "BEGIN:VCALENDAR"
+          , "VERSION:2.0"
+          , "BEGIN:VEVENT"
+          , "UID:ED20080707193000"
+          , "CREATED:20080707T170000Z"
+          , "DTSTART:20080707T193000Z"
+          , "DTEND:20080707T193000Z"
+          , "SUMMARY:Coffee"
+          , "DESCRIPTION:Coffee-Thirty;Sacrosanct Event"
+          , "END:VEVENT"
+          , ""
+          , "END:VCALENDAR"
+          ]
+    assertEqual "" expected (ICS.toIcs input)
   ,
 \end{code}
 
 \begin{code}
   "render location attribute with vcal location field" ~: do
-    assertEqual "pending" 1 1
+    let d = I.utcDate tstamp (I.gregorian 2008 7 7)
+    let e = Entry (I.instant d 14 30) [
+          Description "Coffee-Thirty"
+          , Location "ThoughtWorks, 200 E Randolph, Chicago, IL"
+          , Description "Sacrosanct Event"]
+    let input = Diary [push e (empty d)]
+
+    let expected = unlines [
+          "BEGIN:VCALENDAR"
+          , "VERSION:2.0"
+          , "BEGIN:VEVENT"
+          , "UID:ED20080707193000"
+          , "CREATED:20080707T170000Z"
+          , "DTSTART:20080707T193000Z"
+          , "DTEND:20080707T193000Z"
+          , "SUMMARY:Coffee-Thirty"
+          , "DESCRIPTION:Sacrosanct Event"
+          , "LOCATION:ThoughtWorks\\, 200 E Randolph\\, Chicago\\, IL"
+          , "END:VEVENT"
+          , ""
+          , "END:VCALENDAR"
+          ]
+    assertEqual "" expected (ICS.toIcs input)
 \end{code}
 
 \begin{code}

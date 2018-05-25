@@ -70,8 +70,9 @@ tests = test [
 \begin{code}
   "requires leading whitespace for entry" ~: do
       let input = unlines [
-            "  14:30 field1; field2",
-            "Other Text"
+            "  14:30 field1"
+            , "    field2"
+            , "Other Text"
             ]
       assertParsesTo entryParser input
         (R.entry (I.instant I.epoch 19 30) ["field1", "field2"])
@@ -91,20 +92,6 @@ tests = test [
   ,
 
 \end{code}
-
-
-\begin{code}
-  "parse semicolon separator" ~: do
-      let input = unlines [
-            "  14:30 field1; field2",
-            "    field3"
-            ]
-      assertParsesTo entryParser input
-        (R.entry (I.instant I.epoch 19 30) ["field1", "field2", "field3"])
-  ,
-
-\end{code}
-
 
 \begin{code}
   "parse date and time with empty description produces error" ~: do
@@ -192,6 +179,44 @@ week-day name instead of a specific date.
       ,
 \end{code}
 
+\begin{code}
+  "parse entry with location" ~: do
+      let input = unlines [
+            "31 May 2018",
+            "  14:00-15:00 Toby Teaches White-boarding",
+            "    Location: 73 W Monroe, Suite 303, Chicago, IL"
+            ]
+      let d = I.utcDate tstamp (I.gregorian 2018 5 31)
+      let t1 = I.makeTime d 14 00
+      let t2 = I.makeTime d 15 00
+      let e = R.Entry
+            (I.interval t1 (Just t2))
+            [R.Description "Toby Teaches White-boarding"
+            , R.Location "73 W Monroe, Suite 303, Chicago, IL"]
+      let actual = (R.Diary [R.push e (makeRecord (I.gregorian 2018 5 31))])
+      assertParsesTo diaryParser input actual
+      ,
+\end{code}
+
+\begin{code}
+  "ignore header comment" ~: do
+      let input = unlines [
+--            "# -*- mode: diary; epa-file-encrypt-to: (\"toby@test.net\"); -*-",
+            "31 May 2018",
+            "  14:00-15:00 Toby Teaches White-boarding",
+            "    Location: 73 W Monroe, Suite 303, Chicago, IL"
+            ]
+      let d = I.utcDate tstamp (I.gregorian 2018 5 31)
+      let t1 = I.makeTime d 14 00
+      let t2 = I.makeTime d 15 00
+      let e = R.Entry
+            (I.interval t1 (Just t2))
+            [R.Description "Toby Teaches White-boarding"
+            , R.Location "73 W Monroe, Suite 303, Chicago, IL"]
+      let expected = (R.Diary [R.push e (makeRecord (I.gregorian 2018 5 31))])
+      assertParsesTo diaryParser input expected
+      ,
+\end{code}
 
 \begin{code}
   "parse multiple records" ~: do
