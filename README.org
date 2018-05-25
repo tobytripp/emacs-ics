@@ -18,3 +18,7 @@
    #+BEGIN_SRC sh
    make
    #+END_SRC
+
+** Download
+
+  [[https://github.com/tobytripp/emacs-ics/releases/tag/v1.0][Latest Release]]
