@@ -38,6 +38,7 @@ entry  :: Record -> Parser Entry
 -- TODO: unwind/explain the (<$>) and (<*>) operators
 
 record localt = do
+  _ <- Tok.whitespace
   r <- empty <$> Interval.date localt
   let entryP = entry r
   entries <- (Tok.lexeme $ many entryP) <?> "Record"

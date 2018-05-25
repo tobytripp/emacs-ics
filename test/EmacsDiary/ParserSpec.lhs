@@ -201,7 +201,7 @@ week-day name instead of a specific date.
 \begin{code}
   "ignore header comment" ~: do
       let input = unlines [
---            "# -*- mode: diary; epa-file-encrypt-to: (\"toby@test.net\"); -*-",
+            "# -*- mode: diary; epa-file-encrypt-to: (\"toby@test.net\"); -*-",
             "31 May 2018",
             "  14:00-15:00 Toby Teaches White-boarding",
             "    Location: 73 W Monroe, Suite 303, Chicago, IL"
